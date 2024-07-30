@@ -12,6 +12,10 @@ import {
   AttributeMap,
   AttributeType,
   AttestationFlags,
+  CryptokiKeyType,
+  CryptokiObjectClass,
+  Attributes,
+  AttributeValue,
 } from './attestation';
 import { KmsAttestationParser } from './parser';
 import {
@@ -213,131 +217,18 @@ function printObject(
   printAttributes(data.attributes, tab + TAB);
 }
 
-function printAttributes(attributes: AttributeMap, tab = '') {
+function printAttributes(attributes: Attributes, tab = '') {
   console.log(`${tab}Attributes:`);
-  for (const [, attribute] of Object.entries(attributes)) {
-    const tag = attribute.tag;
-    console.log(
-      `${tab}${TAB}${AttributeType[attribute.tag]}: ${stringifyAttributeValue(
-        attribute.tag,
-        attribute.value,
-      )}`,
-    );
+  for (const [key, value] of Object.entries(attributes)) {
+    console.log(`${tab}${TAB}${key}: ${stringifyAttributeValue(value)}`);
   }
 }
 
-enum CryptokiObjectClass {
-  CKO_DATA = 0x00,
-  CKO_CERTIFICATE = 0x01,
-  CKO_PUBLIC_KEY = 0x02,
-  CKO_PRIVATE_KEY = 0x03,
-  CKO_SECRET_KEY = 0x04,
-  CKO_HW_FEATURE = 0x05,
-  CKO_DOMAIN_PARAMETERS = 0x06,
-  CKO_MECHANISM = 0x07,
-  CKO_OTP_KEY = 0x08,
-}
-
-function stringifyAttributeText(value: Uint8Array) {
-  const nullByte = value.indexOf(0);
-  return Buffer.from(value.subarray(0, nullByte)).toString();
-}
-
-function stringifyAttributeBoolean(value: Uint8Array) {
-  return !!value[0];
-}
-
-function stringifyAttributeEnum<T>(value: Uint8Array, enumType: T) {
-  return (
-    (enumType as Record<number, string>)[value[0]] || `Unknown (${value[0]})`
-  );
-}
-
-function stringifyAttributeNumber(value: Uint8Array) {
-  return new DataView(
-    value.buffer,
-    value.byteOffset,
-    value.byteLength,
-  ).getUint32(0, false);
-}
-
-enum CryptokiKeyType {
-  CKK_RSA = 0x00,
-  CKK_DSA = 0x01,
-  CKK_DH = 0x02,
-  CKK_EC = 0x03,
-  CKK_X9_42_DH = 0x04,
-  CKK_KEA = 0x05,
-  CKK_GENERIC_SECRET = 0x10,
-  CKK_RC2 = 0x11,
-  CKK_RC4 = 0x12,
-  CKK_DES = 0x13,
-  CKK_DES2 = 0x14,
-  CKK_DES3 = 0x15,
-  CKK_CAST = 0x16,
-  CKK_CAST3 = 0x17,
-  CKK_CAST5 = 0x18,
-  CKK_CAST128 = 0x18,
-  CKK_RC5 = 0x19,
-  CKK_IDEA = 0x1a,
-  CKK_SKIPJACK = 0x1b,
-  CKK_BATON = 0x1c,
-  CKK_JUNIPER = 0x1d,
-  CKK_CDMF = 0x1e,
-  CKK_AES = 0x1f,
-  CKK_BLOWFISH = 0x20,
-  CKK_TWOFISH = 0x21,
-  CKK_SECURID = 0x22,
-  CKK_HOTP = 0x23,
-  CKK_ACTI = 0x24,
-  CKK_CAMELLIA = 0x25,
-  CKK_ARIA = 0x26,
-}
-
-function stringifyAttributeValue(tag: AttributeType, value: Uint8Array) {
-  switch (tag) {
-    case AttributeType.OBJ_ATTR_CLASS:
-      return stringifyAttributeEnum(value, CryptokiObjectClass);
-    case AttributeType.OBJ_ATTR_TOKEN:
-    case AttributeType.OBJ_ATTR_PRIVATE:
-    case AttributeType.OBJ_ATTR_TRUSTED:
-    case AttributeType.OBJ_ATTR_SENSITIVE:
-    case AttributeType.OBJ_ATTR_ENCRYPT:
-    case AttributeType.OBJ_ATTR_DECRYPT:
-    case AttributeType.OBJ_ATTR_WRAP:
-    case AttributeType.OBJ_ATTR_UNWRAP:
-    case AttributeType.OBJ_ATTR_SIGN:
-    case AttributeType.OBJ_ATTR_VERIFY:
-    case AttributeType.OBJ_ATTR_DERIVE:
-    case AttributeType.OBJ_ATTR_EXTRACTABLE:
-    case AttributeType.OBJ_ATTR_LOCAL:
-    case AttributeType.OBJ_ATTR_NEVER_EXTRACTABLE:
-    case AttributeType.OBJ_ATTR_ALWAYS_SENSITIVE:
-    case AttributeType.OBJ_ATTR_WRAP_WITH_TRUSTED:
-    case AttributeType.OBJ_ATTR_SPLITTABLE:
-    case AttributeType.OBJ_ATTR_IS_SPLIT:
-      return stringifyAttributeBoolean(value);
-    case AttributeType.OBJ_ATTR_LABEL:
-      return stringifyAttributeText(value);
-    case AttributeType.OBJ_ATTR_KEY_TYPE:
-      return stringifyAttributeEnum(value, CryptokiKeyType);
-    case AttributeType.OBJ_ATTR_ID:
-      return stringifyAttributeText(value);
-    case AttributeType.OBJ_ATTR_MODULUS_BITS:
-    case AttributeType.OBJ_ATTR_VALUE_LEN:
-      return stringifyAttributeNumber(value); // TODO: Check if this is correct
-    case AttributeType.OBJ_ATTR_KCV:
-    case AttributeType.OBJ_ATTR_MODULUS:
-    case AttributeType.OBJ_EXT_ATTR1:
-    case AttributeType.OBJ_ATTR_ENCRYPT_KEY_MECHANISMS:
-    case AttributeType.OBJ_ATTR_DECRYPT_KEY_MECHANISMS:
-    case AttributeType.OBJ_ATTR_SIGN_KEY_MECHANISMS:
-    case AttributeType.OBJ_ATTR_VERIFY_KEY_MECHANISMS:
-    case AttributeType.OBJ_ATTR_WRAP_KEY_MECHANISMS:
-    case AttributeType.OBJ_ATTR_UNWAP_KEY_MECHANISMS:
-    case AttributeType.OBJ_ATTR_DERIVE_KEY_MECHANISMS:
-    default:
-      return Buffer.from(value).toString('hex');
+function stringifyAttributeValue(value: AttributeValue): string {
+  if (value instanceof Uint8Array) {
+    return Buffer.from(value).toString('hex');
+  } else {
+    return `${value}`;
   }
 }
 
