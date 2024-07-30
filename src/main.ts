@@ -50,14 +50,14 @@ program
     'The file containing the attestation certificates',
   )
   .option(
-    '-m, --mfr <file>',
+    '-m, --mfr [file]',
     'The file containing the manufacturer root certificate',
   )
   .option(
-    '-o, --owner <file>',
+    '-o, --owner [file]',
     'The file containing the owner root certificate',
   )
-  .option('--info', 'Output information about the attestation and certificates')
+  .option('--info', 'Output information about the attestation')
   .argument('<file>', 'The file containing the key attestation')
   .action(
     async (
