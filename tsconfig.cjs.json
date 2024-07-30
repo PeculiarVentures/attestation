@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "build/cjs",
+    "removeComments": true,
+  },
+  "exclude": [
+    "src/**/*.spec.ts",
+  ]
+}
