@@ -176,7 +176,10 @@ export class KmsAttestationParser {
       compressed,
       responseHeader,
       attestationData: { info: infoHeader, firstKey, secondKey },
-      signedData: data.subarray(0, attestDataPosition),
+      signedData: data.subarray(
+        0,
+        data.byteLength - KmsAttestationParser.SIGNATURE_SIZE,
+      ),
       signature,
     };
   }
