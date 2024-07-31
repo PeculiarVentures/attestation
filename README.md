@@ -53,7 +53,6 @@ assert(result.isValid);
 ### Command-Line Interface
 
 The module also provides a command-line interface (CLI) for verifying KMS key attestations and displaying information about attestation certificates. For detailed usage instructions, refer to the [CLI Usage Guide](CLI_USAGE.md).
-å
 
 ## Additional Resources
 
