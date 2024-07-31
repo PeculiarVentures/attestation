@@ -1,5 +1,8 @@
 # KMS Attestation Module
 
+[![Coverage Status](https://coveralls.io/repos/github/PeculiarVentures/kms-attestation/badge.svg?branch=main)](https://coveralls.io/github/PeculiarVentures/kms-attestation?branch=main)
+[![CI](https://github.com/PeculiarVentures/kms-attestation/actions/workflows/ci.yml/badge.svg)](https://github.com/PeculiarVentures/kms-attestation/actions/workflows/ci.yml)
+
 `@peculiar/kms-attestation` is a library and command-line tool for verifying KMS key attestations and displaying information about attestation certificates. This module provides a comprehensive API for parsing and validating attestation data, as well as a command-line interface (CLI) for performing these tasks.
 
 ## Installation
