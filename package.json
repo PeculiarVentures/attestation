@@ -8,6 +8,7 @@
   "dependencies": {
     "@peculiar/x509": "1.11.0",
     "commander": "12.1.0",
+    "nyc": "^17.0.0",
     "pako": "2.1.0",
     "pvtsutils": "1.3.5",
     "tslib": "^2.6.3"
@@ -25,7 +26,8 @@
     "build": "npm run build:esm && npm run build:cjs && npm run build:types",
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:cjs": "tsc -p tsconfig.cjs.json",
-    "build:types": "tsc -p tsconfig.types.json"
+    "build:types": "tsc -p tsconfig.types.json",
+    "coverage": "nyc npm run test"
   },
   "bin": {
     "kms-attestation": "./build/main.js"
