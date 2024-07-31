@@ -101,14 +101,31 @@ program
         const parser = new KmsAttestationParser();
         const attestationData = parser.parse(attestation);
 
-        if (info) {
-          printAttestation(attestationData);
-        }
-
         const validator = new KmsAttestationValidator(validatorParams);
         const result = await validator.validate(attestationData, certificates);
 
-        console.log('Attestation:', result ? 'PASSED' : 'FAILED');
+        if (info) {
+          printAttestation(attestationData);
+          // print info about signer
+          const signer = result.signer;
+          console.log('Signer Certificate:');
+          console.log(`  Subject: ${signer.subject}`);
+          console.log(`  Issuer: ${signer.issuer}`);
+          console.log(`  Serial Number: ${signer.serialNumber}`);
+          console.log(`  Valid From: ${signer.notAfter}`);
+          console.log(`  Valid To: ${signer.notBefore}`);
+
+          // print info about certificate chain
+          const chain = result.chain.slice(1);
+          let tab = TAB;
+          console.log('Certificate Chain:');
+          for (const cert of chain) {
+            console.log(`${tab}Certificate: ${cert.subject}`);
+            tab += TAB;
+          }
+        }
+
+        console.log('Attestation:', result.isValid ? 'PASSED' : 'FAILED');
 
         if (!result) {
           process.exit(1);
