@@ -7,11 +7,7 @@ import {
   ResponseHeader,
   KmsAttestationData,
   ObjectAttributes,
-  AttributeMap,
-  AttributeType,
   AttestationFlags,
-  CryptokiKeyType,
-  CryptokiObjectClass,
   Attributes,
   AttributeValue,
 } from './attestation';
