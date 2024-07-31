@@ -10,6 +10,12 @@ export interface KmsAttestationValidatorParams {
   ownerRootCert?: x509.X509Certificate;
 }
 
+export interface ValidationResult {
+  isValid: boolean;
+  signer: x509.X509Certificate;
+  chain: x509.X509Certificates;
+}
+
 export class KmsAttestationValidator {
   private crypto: Crypto;
   private mfrRootCert: x509.X509Certificate;
@@ -27,12 +33,12 @@ export class KmsAttestationValidator {
    * Validates the attestation data.
    * @param data - The attestation data to validate.
    * @param certChain - The certificate chain used to validate the attestation data.
-   * @returns A promise that resolves with a boolean indicating whether the attestation data is valid.
+   * @returns A promise that resolves with an object containing the validation result.
    */
   public async validate(
     data: Uint8Array | KmsAttestation,
     certChain: string,
-  ): Promise<boolean> {
+  ): Promise<ValidationResult> {
     const parser = new KmsAttestationParser();
     const attestation = BufferSourceConverter.isBufferSource(data)
       ? parser.parse(data)
@@ -91,11 +97,17 @@ export class KmsAttestationValidator {
     const signedData = attestation.signedData;
 
     // Perform a single signature verification
-    return await this.verifyAttestation(
+    const isValid = await this.verifyAttestation(
       mfrPartitionCert,
       signature,
       signedData,
     );
+
+    return {
+      isValid,
+      signer: mfrPartitionCert,
+      chain: new x509.X509Certificates(certs),
+    };
   }
 
   private getDefaultManufacturerRootCertificate(): x509.X509Certificate {

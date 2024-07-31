@@ -101,6 +101,11 @@ describe('Validator', () => {
       c.charCodeAt(0),
     );
     const result = await validator.validate(data, certChain);
-    assert.strictEqual(result, true);
+    assert.strictEqual(result.isValid, true);
+    assert.strictEqual(
+      result.signer.subjectName.getField('CN')[0],
+      'HSM:5.3G1953-ICM001225:PARTN:1, for FIPS mode',
+    );
+    assert.strictEqual(result.chain.length, 4);
   });
 });
