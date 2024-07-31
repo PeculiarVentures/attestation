@@ -5,6 +5,14 @@
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "types": "build/types/index.d.ts",
+  "files": [
+    "bin",
+    "build",
+    "LICENSE",
+    "README.md",
+    "CLI_USAGE.md",
+    "package.json"
+  ],
   "dependencies": {
     "@peculiar/x509": "1.11.0",
     "commander": "12.1.0",
@@ -23,14 +31,15 @@
   },
   "scripts": {
     "test": "mocha",
-    "build": "npm run build:esm && npm run build:cjs && npm run build:types",
+    "build": "npm run build:esm && npm run build:cjs && npm run build:types && npm run build:cli",
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:types": "tsc -p tsconfig.types.json",
+    "build:cli": "mkdir -p bin && echo '#!/usr/bin/env node\nrequire(\"../build/cjs/main.js\");' > bin/kms-attestation && chmod +x bin/kms-attestation",
     "coverage": "nyc npm run test"
   },
   "bin": {
-    "kms-attestation": "./build/main.js"
+    "kms-attestation": "./bin/kms-attestation"
   },
   "keywords": [
     "kms",
