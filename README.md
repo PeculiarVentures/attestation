@@ -43,14 +43,24 @@ import fs from "node:fs";
 import assert from "node:assert";
 import { KmsAttestationValidator } from "@peculiar/kms-attestation";
 
-const attestationData = fs.readFileSync("path/to/attestation_data.dat");
-const certificates = fs.readFileSync("path/to/certificates_chain.crt", "utf-8");
+async function main() {
+  const attestationData = fs.readFileSync("path/to/attestation_data.dat");
+  const certificates = fs.readFileSync(
+    "path/to/certificates_chain.crt",
+    "utf-8"
+  );
 
-const validator = new KmsAttestationValidator();
-const result = await validator.validate(attestationData, certificates);
+  const validator = new KmsAttestationValidator();
+  const result = await validator.validate(attestationData, certificates);
 
-console.log(result);
-assert(result.isValid);
+  console.log(result);
+  assert(result.isValid);
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
 ```
 
 ### Command-Line Interface
