@@ -19,10 +19,6 @@ export class DataViewReader {
     this.position = position;
   }
 
-  getPosition(): number {
-    return this.position;
-  }
-
   readBytes(length: number): Uint8Array {
     const value = new Uint8Array(this.view.buffer, this.position, length);
     this.position += length;
