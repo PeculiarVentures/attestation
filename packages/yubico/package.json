@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "name": "@peculiar/attestation-yubico",
-  "description": "Provides tools to verify the PIV attestation files from Yubico",
+  "description": "A library providing tools to verify PIV attestation files from Yubico, including support for certificate chain validation and attestation data extraction.",
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "types": "build/types/index.d.ts",
