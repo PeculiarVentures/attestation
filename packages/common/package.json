@@ -5,6 +5,12 @@
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "types": "build/types/index.d.ts",
+  "files": [
+    "build",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
   "dependencies": {
     "@peculiar/x509": "^1.12.1",
     "tslib": "^2.6.3"
