@@ -5,9 +5,7 @@
   "bin": {
     "attest": "./bin/main.js"
   },
-  "main": "build/cjs/index.js",
-  "module": "build/esm/index.js",
-  "types": "build/types/index.d.ts",
+  "main": "./bin/main.js",
   "files": [
     "bin",
     "build",
@@ -23,14 +21,8 @@
     "tslib": "^2.6.3"
   },
   "scripts": {
-    "test": "mocha",
-    "clean": "rimraf build bin coverage .nyc_output",
-    "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run build:types && npm run build:cli",
-    "build:esm": "tsc -p tsconfig.esm.json",
-    "build:cjs": "tsc -p tsconfig.cjs.json",
-    "build:types": "tsc -p tsconfig.types.json",
-    "build:cli": "mkdir -p bin && echo '#!/usr/bin/env node\nrequire(\"../build/cjs/main.js\");' > bin/kms-attestation && chmod +x bin/kms-attestation",
-    "coverage": "nyc npm run test"
+    "clean": "rimraf build",
+    "build": "npm run clean && tsc"
   },
   "keywords": [
     "kms",

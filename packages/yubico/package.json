@@ -16,5 +16,20 @@
     "@peculiar/x509": "^1.12.1",
     "graphene-pk11": "^2.3.5",
     "tslib": "^2.6.3"
-  }
+  },
+  "scripts": {
+    "clean": "rimraf build",
+    "build": "npm run clean && npm run build:cjs && npm run build:esm && npm run build:types",
+    "build:cjs": "tsc --project tsconfig.cjs.json",
+    "build:esm": "tsc --project tsconfig.esm.json",
+    "build:types": "tsc --project tsconfig.types.json"
+  },
+  "keywords": [
+    "yubico",
+    "piv",
+    "attestation",
+    "hsm"
+  ],
+  "author": "PeculiarVentures",
+  "license": "MIT"
 }

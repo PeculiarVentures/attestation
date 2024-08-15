@@ -6,7 +6,9 @@
   ],
   "scripts": {
     "test": "mocha",
-    "cli": "ts-node -r tsconfig-paths/register packages/cli/src/main.ts"
+    "cli": "ts-node -r tsconfig-paths/register packages/cli/src/main.ts",
+    "clean": "leran run clean",
+    "build": "lerna run build"
   },
   "dependencies": {
     "tsconfig-paths": "^4.2.0"
