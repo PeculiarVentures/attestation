@@ -1,7 +1,10 @@
 {
   "name": "@peculiar/attestation-cli",
   "version": "1.0.0",
-  "description": "Provides Console Line Interface to verify the HSM attestations",
+  "description": "A CLI utility for verifying attestation data in various formats, supporting multiple attestation providers and offering a range of commands to interact with attestation files and certificates.",
+  "bin": {
+    "attest": "./bin/main.js"
+  },
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "types": "build/types/index.d.ts",
@@ -28,9 +31,6 @@
     "build:types": "tsc -p tsconfig.types.json",
     "build:cli": "mkdir -p bin && echo '#!/usr/bin/env node\nrequire(\"../build/cjs/main.js\");' > bin/kms-attestation && chmod +x bin/kms-attestation",
     "coverage": "nyc npm run test"
-  },
-  "bin": {
-    "attest": "./bin/kms-attestation"
   },
   "keywords": [
     "kms",
