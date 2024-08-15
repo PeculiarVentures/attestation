@@ -12,9 +12,7 @@ npm install @peculiar/attestation-yubico
 
 ## Usage
 
-### PivTokenManager
-
-The `PivTokenManager` class is used to manage PIV tokens and retrieve slot information.
+This example demonstrates how to verify a PIV attestation from a Yubico token:
 
 ```typescript
 import {
