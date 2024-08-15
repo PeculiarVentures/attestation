@@ -1,0 +1,44 @@
+{
+  "name": "@peculiar/attestation-cli",
+  "version": "1.0.0",
+  "description": "Provides Console Line Interface to verify the HSM attestations",
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/types/index.d.ts",
+  "files": [
+    "bin",
+    "build",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
+  "dependencies": {
+    "@peculiar/attestation-marvell": "^1.0.0",
+    "@peculiar/attestation-yubico": "^1.0.0",
+    "@peculiar/x509": "^1.12.1",
+    "commander": "^12.1.0",
+    "tslib": "^2.6.3"
+  },
+  "scripts": {
+    "test": "mocha",
+    "clean": "rimraf build bin coverage .nyc_output",
+    "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run build:types && npm run build:cli",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:types": "tsc -p tsconfig.types.json",
+    "build:cli": "mkdir -p bin && echo '#!/usr/bin/env node\nrequire(\"../build/cjs/main.js\");' > bin/kms-attestation && chmod +x bin/kms-attestation",
+    "coverage": "nyc npm run test"
+  },
+  "bin": {
+    "attest": "./bin/kms-attestation"
+  },
+  "keywords": [
+    "kms",
+    "attestation",
+    "google",
+    "cloud",
+    "hsm"
+  ],
+  "author": "PeculiarVentures",
+  "license": "MIT"
+}

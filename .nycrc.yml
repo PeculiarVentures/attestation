@@ -1,10 +1,9 @@
 extension: 
   - ".ts"
 include:
-  - "src/**/*.ts"
+  - "packages/*/src/**/*.ts"
 exclude:
-  - "**/*.d.ts"
+  - "**/*.spec.ts"
 reporter:
   - lcov
   - text-summary
-  # - html

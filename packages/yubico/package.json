@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "name": "@peculiar/attestation-yubico",
+  "description": "Provides tools to verify the PIV attestation files from Yubico",
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/types/index.d.ts",
+  "files": [
+    "build",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
+  "dependencies": {
+    "@peculiar/attestation-common": "^1.0.0",
+    "@peculiar/x509": "^1.12.1",
+    "graphene-pk11": "^2.3.5",
+    "tslib": "^2.6.3"
+  }
+}

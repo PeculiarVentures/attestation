@@ -1,0 +1,8 @@
+{
+  "name": "@peculiar/attestation-common",
+  "version": "1.0.0",
+  "description": "Common module for attestation packages",
+  "dependencies": {
+    "@peculiar/x509": "^1.12.1"
+  }
+}

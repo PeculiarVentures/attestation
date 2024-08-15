@@ -1,4 +1,4 @@
-export enum AttestationFlags {
+export enum MarvellAttestationFlags {
   /**
    * Fetches the attributes as part of the response.
    */
@@ -16,7 +16,7 @@ export enum AttestationFlags {
 /**
  * Enum representing various attribute types for keys.
  */
-export enum AttributeType {
+export enum MarvellAttributeType {
   /**
    * Class type of the key.
    */
@@ -198,21 +198,21 @@ export enum AttributeType {
   OBJ_ATTR_DERIVE_KEY_MECHANISMS = 0x80000180,
 }
 
-export interface KmsAttestationData {
+export interface MarvellAttestationData {
   info: InfoHeader;
   firstKey: ObjectAttributes;
-  secondKey: ObjectAttributes;
+  secondKey?: ObjectAttributes;
 }
 
-export interface KmsAttestation {
+export interface MarvellAttestation {
   compressed: boolean;
   responseHeader: ResponseHeader;
-  attestationData: KmsAttestationData;
+  attestationData: MarvellAttestationData;
   signedData: Uint8Array;
   signature: Uint8Array;
 }
 
-export type AttributeMap = Partial<Record<AttributeType, Attribute>>;
+export type AttributeMap = Partial<Record<MarvellAttributeType, Attribute>>;
 
 export interface ObjectAttributes {
   handle: number;
@@ -222,14 +222,14 @@ export interface ObjectAttributes {
 }
 
 export interface Attribute {
-  tag: AttributeType;
+  tag: MarvellAttributeType;
   length: number;
   value: Uint8Array;
 }
 
 export interface ResponseHeader {
   responseCode: number;
-  requestFlags: AttestationFlags;
+  requestFlags: MarvellAttestationFlags;
   totalSize: number;
   bufferSize: number;
 }
@@ -295,180 +295,180 @@ export interface Attributes {
   /**
    * Class type of the key.
    */
-  [AttributeType.OBJ_ATTR_CLASS]: keyof typeof CryptokiObjectClass;
+  ['OBJ_ATTR_CLASS']: keyof typeof CryptokiObjectClass;
 
   /**
    * Identifies the key as a token key.
    */
-  [AttributeType.OBJ_ATTR_TOKEN]: boolean;
+  ['OBJ_ATTR_TOKEN']: boolean;
 
   /**
    * Indicates if this is a shared key or a private key (for symmetric or asymmetric keys).
    */
-  [AttributeType.OBJ_ATTR_PRIVATE]: boolean;
+  ['OBJ_ATTR_PRIVATE']: boolean;
 
   /**
    * The key can be trusted for the application that it was created.
    */
-  [AttributeType.OBJ_ATTR_TRUSTED]: boolean;
+  ['OBJ_ATTR_TRUSTED']: boolean;
 
   /**
    * Always true for keys generated on HSM.
    */
-  [AttributeType.OBJ_ATTR_SENSITIVE]: boolean;
+  ['OBJ_ATTR_SENSITIVE']: boolean;
 
   /**
    * Indicates if key can be used to encrypt data for operations like RSA_Encrypt. Not applicable to EC keys.
    */
-  [AttributeType.OBJ_ATTR_ENCRYPT]: boolean;
+  ['OBJ_ATTR_ENCRYPT']: boolean;
 
   /**
    * Indicates if key can be used to decrypt data for operations like RSA_Decrypt. Not applicable to EC keys.
    */
-  [AttributeType.OBJ_ATTR_DECRYPT]: boolean;
+  ['OBJ_ATTR_DECRYPT']: boolean;
 
   /**
    * Indicates if key can be used to wrap other keys.
    */
-  [AttributeType.OBJ_ATTR_WRAP]: boolean;
+  ['OBJ_ATTR_WRAP']: boolean;
 
   /**
    * Indicates if key can be used to unwrap other keys.
    */
-  [AttributeType.OBJ_ATTR_UNWRAP]: boolean;
+  ['OBJ_ATTR_UNWRAP']: boolean;
 
   /**
    * Indicates if key can be used for signing operations.
    */
-  [AttributeType.OBJ_ATTR_SIGN]: boolean;
+  ['OBJ_ATTR_SIGN']: boolean;
 
   /**
    * Indicates if key can be used for verifying operations.
    */
-  [AttributeType.OBJ_ATTR_VERIFY]: boolean;
+  ['OBJ_ATTR_VERIFY']: boolean;
 
   /**
    * Indicates if key supports key derivation (i.e. if other keys can be derived from this one).
    */
-  [AttributeType.OBJ_ATTR_DERIVE]: boolean;
+  ['OBJ_ATTR_DERIVE']: boolean;
 
   /**
    * Indicates if key can be extracted.
    */
-  [AttributeType.OBJ_ATTR_EXTRACTABLE]: boolean;
+  ['OBJ_ATTR_EXTRACTABLE']: boolean;
 
   /**
    * Indicates if key was generated locally.
    */
-  [AttributeType.OBJ_ATTR_LOCAL]: boolean;
+  ['OBJ_ATTR_LOCAL']: boolean;
 
   /**
    * Indicates if key can never be extracted.
    */
-  [AttributeType.OBJ_ATTR_NEVER_EXTRACTABLE]: boolean;
+  ['OBJ_ATTR_NEVER_EXTRACTABLE']: boolean;
 
   /**
    * Indicates if key has always had the OBJ_ATTR_SENSITIVE attribute set.
    */
-  [AttributeType.OBJ_ATTR_ALWAYS_SENSITIVE]: boolean;
+  ['OBJ_ATTR_ALWAYS_SENSITIVE']: boolean;
 
   /**
    * Indicates if key can only be wrapped with a wrapping key that has OBJ_ATTR_TRUSTED set.
    */
-  [AttributeType.OBJ_ATTR_WRAP_WITH_TRUSTED]: boolean;
+  ['OBJ_ATTR_WRAP_WITH_TRUSTED']: boolean;
 
   /**
    * Indicates if key can be split into multiple parts.
    */
-  [AttributeType.OBJ_ATTR_SPLITTABLE]: boolean;
+  ['OBJ_ATTR_SPLITTABLE']: boolean;
 
   /**
    * Indicate if it is part of the key split.
    */
-  [AttributeType.OBJ_ATTR_IS_SPLIT]: boolean;
+  ['OBJ_ATTR_IS_SPLIT']: boolean;
 
   /**
    * Key description.
    */
-  [AttributeType.OBJ_ATTR_LABEL]: string;
+  ['OBJ_ATTR_LABEL']: string;
 
   /**
    * Subclass type of the key.
    */
-  [AttributeType.OBJ_ATTR_KEY_TYPE]: keyof typeof CryptokiKeyType;
+  ['OBJ_ATTR_KEY_TYPE']: keyof typeof CryptokiKeyType;
 
   /**
    * Key identifier.
    */
-  [AttributeType.OBJ_ATTR_ID]: string;
+  ['OBJ_ATTR_ID']: string;
 
   /**
    * RSA key size in bits.
    */
-  [AttributeType.OBJ_ATTR_MODULUS_BITS]: number;
+  ['OBJ_ATTR_MODULUS_BITS']: number;
 
   /**
    * Length in bytes of any value.
    */
-  [AttributeType.OBJ_ATTR_VALUE_LEN]: number;
+  ['OBJ_ATTR_VALUE_LEN']: number;
 
   /**
    * Key Check Value.
    */
-  [AttributeType.OBJ_ATTR_KCV]: Uint8Array;
+  ['OBJ_ATTR_KCV']: Uint8Array;
 
   /**
    * RSA key modulus value.
    */
-  [AttributeType.OBJ_ATTR_MODULUS]: Uint8Array;
+  ['OBJ_ATTR_MODULUS']: Uint8Array;
 
   /**
    * Extended Attribute #1.
    */
-  [AttributeType.OBJ_EXT_ATTR1]: Uint8Array;
+  ['OBJ_EXT_ATTR1']: Uint8Array;
 
   /**
    * Indicate if key supports encryption.
    */
-  [AttributeType.OBJ_ATTR_ENCRYPT_KEY_MECHANISMS]: Uint8Array;
+  ['OBJ_ATTR_ENCRYPT_KEY_MECHANISMS']: Uint8Array;
 
   /**
    * Indicate if key supports decryption.
    */
-  [AttributeType.OBJ_ATTR_DECRYPT_KEY_MECHANISMS]: Uint8Array;
+  ['OBJ_ATTR_DECRYPT_KEY_MECHANISMS']: Uint8Array;
 
   /**
    * Indicate if key supports signing.
    */
-  [AttributeType.OBJ_ATTR_SIGN_KEY_MECHANISMS]: Uint8Array;
+  ['OBJ_ATTR_SIGN_KEY_MECHANISMS']: Uint8Array;
 
   /**
    * Indicate if key supports signature verification.
    */
-  [AttributeType.OBJ_ATTR_VERIFY_KEY_MECHANISMS]: Uint8Array;
+  ['OBJ_ATTR_VERIFY_KEY_MECHANISMS']: Uint8Array;
 
   /**
    * Indicate if key supports key wrapping.
    */
-  [AttributeType.OBJ_ATTR_WRAP_KEY_MECHANISMS]: Uint8Array;
+  ['OBJ_ATTR_WRAP_KEY_MECHANISMS']: Uint8Array;
 
   /**
    * Indicate if key supports key unwrapping.
    */
-  [AttributeType.OBJ_ATTR_UNWAP_KEY_MECHANISMS]: Uint8Array;
+  ['OBJ_ATTR_UNWAP_KEY_MECHANISMS']: Uint8Array;
 
   /**
    * Indicate if key supports key derivation.
    */
-  [AttributeType.OBJ_ATTR_DERIVE_KEY_MECHANISMS]: Uint8Array;
+  ['OBJ_ATTR_DERIVE_KEY_MECHANISMS']: Uint8Array;
 
   /**
    * RSA key public exponent value.
    */
-  [AttributeType.OBJ_ATTR_PUBLIC_EXPONENT]: Uint8Array;
+  ['OBJ_ATTR_PUBLIC_EXPONENT']: Uint8Array;
 
   /**
    * Extended Key Check Value.
    */
-  [AttributeType.OBJ_ATTR_EKCV]: Uint8Array;
+  ['OBJ_ATTR_EKCV']: Uint8Array;
 }
