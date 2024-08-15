@@ -70,8 +70,8 @@ async function printSlotInfo(slot: SlotInfo, attestationId?: string, tab = '') {
   printSlotDetails(slot, tab);
   if (slot.caCertificate) {
     let attestations = attestationId
-      ? slot.availableAttestations.filter((a) => a.id === attestationId)
-      : slot.availableAttestations;
+      ? slot.attestations.filter((a) => a.id === attestationId)
+      : slot.attestations;
     console.log();
     if (attestationId && attestations.length === 0) {
       console.error(`Error: Attestation ID ${attestationId} not found.`);
@@ -161,7 +161,7 @@ pivCommand
         console.error('Error: Attestation is not supported in this slot.');
         process.exit(1);
       }
-      const attestation = slot.availableAttestations.find(
+      const attestation = slot.attestations.find(
         (a) => a.id === options.attestId,
       );
       if (!attestation) {
@@ -237,7 +237,7 @@ pivCommand
         console.error('Error: Attestation is not supported in this slot.');
         process.exit(1);
       }
-      const attestation = slot.availableAttestations.find(
+      const attestation = slot.attestations.find(
         (a) => a.id === options.attestId,
       );
       if (!attestation) {

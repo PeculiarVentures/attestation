@@ -10,7 +10,7 @@ export interface SlotInfo {
   slotDescription: string;
   tokenLabel: string;
   tokenSerialNumber: string;
-  availableAttestations: PivTokenAttestation[];
+  attestations: PivTokenAttestation[];
   caCertificate?: x509.X509Certificate;
 }
 
@@ -80,7 +80,7 @@ export class PivTokenManager {
         slotDescription: slot.slotDescription,
         tokenLabel: token.label,
         tokenSerialNumber: token.serialNumber,
-        availableAttestations,
+        attestations: availableAttestations,
         caCertificate,
       };
     } finally {
