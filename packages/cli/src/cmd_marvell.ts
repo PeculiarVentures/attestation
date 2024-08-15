@@ -9,6 +9,7 @@ import {
   AttributeValue,
   MarvellAttestationFlags,
   MarvellAttestationProvider,
+  MarvellAttestationType,
 } from '@peculiar/attestation-marvell';
 import { program } from './program';
 import {
@@ -17,7 +18,6 @@ import {
   printPublicKey,
   TAB,
 } from './common';
-import { Attestation } from '@peculiar/attestation-common';
 
 export function printAttestation(attestation: MarvellAttestation, tab = '') {
   console.log(`${tab}Key Attestation:`);
@@ -97,7 +97,7 @@ function stringifyAttestationFlags(flags: MarvellAttestationFlags) {
 }
 
 async function printAttestationDetails(
-  attestation: Attestation<MarvellAttestation>,
+  attestation: MarvellAttestationType,
   tab = '',
 ) {
   printAttestation(attestation.metadata, tab);

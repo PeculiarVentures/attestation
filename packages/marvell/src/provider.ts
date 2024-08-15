@@ -9,13 +9,15 @@ import { MarvellAttestationParser } from './parser';
 import { PublicKeyExtractor } from './public_key';
 import { MarvellAttestationValidator } from './validator';
 
+export type MarvellAttestationType = Attestation<MarvellAttestation>;
+
 export class MarvellAttestationProvider implements AttestationProvider {
   format = 'marvell';
 
   private publicKeyExtractor = new PublicKeyExtractor();
   private validator = new MarvellAttestationValidator();
 
-  async read(data: BufferSource): Promise<Attestation<MarvellAttestation>> {
+  async read(data: BufferSource): Promise<MarvellAttestationType> {
     const parser = new MarvellAttestationParser();
     const attest = parser.parse(data);
     const publicKey = this.publicKeyExtractor.extractPublicKey(attest);
