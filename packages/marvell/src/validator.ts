@@ -1,33 +1,30 @@
 import { AttestationVerificationResult } from '@peculiar/attestation-common';
 import x509 from '@peculiar/x509';
+import { BufferSourceConverter } from 'pvtsutils';
 import { MarvellAttestation } from './attestation';
 import { MarvellAttestationParser } from './parser';
-import { BufferSourceConverter } from 'pvtsutils';
 import { MANUFACTURER_ROOT_CERT, OWNER_ROOT_CERT } from './certs';
 
 export interface MarvellAttestationValidatorParams {
   crypto?: Crypto;
-  mfrRootCert?: x509.X509Certificate;
-  ownerRootCert?: x509.X509Certificate;
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  signer: x509.X509Certificate;
-  chain: x509.X509Certificates;
+  trustedCerts?: x509.X509Certificate[];
 }
 
 export class MarvellAttestationValidator {
   private crypto: Crypto;
-  private mfrRootCert: x509.X509Certificate;
-  private ownerRootCert: x509.X509Certificate;
+  private rootCerts: x509.X509Certificate[];
 
   constructor(params: MarvellAttestationValidatorParams = {}) {
     this.crypto = params.crypto || crypto;
-    this.mfrRootCert =
-      params.mfrRootCert || this.getDefaultManufacturerRootCertificate();
-    this.ownerRootCert =
-      params.ownerRootCert || this.getDefaultOwnerRootCertificate();
+    this.rootCerts = params.trustedCerts || [
+      MANUFACTURER_ROOT_CERT,
+      OWNER_ROOT_CERT,
+    ];
+    if (this.rootCerts.length < 2) {
+      throw new Error(
+        'Invalid number of root certificates. At least two certificates are required.',
+      );
+    }
   }
 
   /**
@@ -41,55 +38,39 @@ export class MarvellAttestationValidator {
     certs: x509.X509Certificate[],
   ): Promise<AttestationVerificationResult> {
     try {
-      const parser = new MarvellAttestationParser();
-      const attestation = BufferSourceConverter.isBufferSource(data)
-        ? parser.parse(data)
-        : data;
-
-      const mfrCardCert = await this.getIssuedCertificate(
-        this.mfrRootCert,
-        certs,
-      );
-      if (!mfrCardCert) {
-        throw new Error(
-          'Failed to build the HSM manufacturer card certificate chain.',
-        );
-      }
-      const mfrPartitionCert = await this.getIssuedCertificate(
-        mfrCardCert,
-        certs,
-      );
-      if (!mfrPartitionCert) {
-        throw new Error(
-          'Failed to build the HSM manufacturer partition certificate chain.',
-        );
+      let attestation: MarvellAttestation;
+      if (BufferSourceConverter.isBufferSource(data)) {
+        const parser = new MarvellAttestationParser();
+        attestation = parser.parse(data);
+      } else {
+        attestation = data;
       }
 
-      const ownerCardCert = await this.getIssuedCertificate(
-        this.ownerRootCert,
-        certs,
-        (cert) => {
-          return cert.publicKey.equal(mfrCardCert.publicKey);
-        },
-      );
-
-      const ownerPartitionCert = await this.getIssuedCertificate(
-        this.ownerRootCert,
-        certs,
-        (cert) => {
-          return cert.publicKey.equal(mfrPartitionCert.publicKey);
-        },
-      );
-
-      if (!ownerCardCert || !ownerPartitionCert) {
-        throw new Error('Failed to build HSM owner certificate chain.');
+      // Build certificate chains for all root certificates
+      const chains = [];
+      for (const rootCert of this.rootCerts) {
+        const chain = await this.getCertificateChain(rootCert, certs);
+        if (!chain) {
+          throw new Error(
+            'Failed to build certificate chain for root certificate',
+          );
+        }
+        chains.push(chain);
       }
 
-      // Check if public keys match
-      if (!mfrPartitionCert.publicKey.equal(ownerPartitionCert.publicKey)) {
-        throw new Error(
-          'Public keys of manufacturer and owner partition certificates do not match.',
-        );
+      const chain = chains[0];
+      const leafCerts = chains.map((chain) => chain[chain.length - 1]);
+
+      // Check if all public keys match
+      const signer = leafCerts[0];
+      const keyId = await signer.publicKey.getKeyIdentifier(this.crypto);
+      for (const cert of leafCerts) {
+        const certKeyId = await cert.publicKey.getKeyIdentifier(this.crypto);
+        if (!BufferSourceConverter.isEqual(keyId, certKeyId)) {
+          throw new Error(
+            'Public key mismatch between leaf certificates in different chains',
+          );
+        }
       }
 
       const signature = attestation.signature;
@@ -97,7 +78,7 @@ export class MarvellAttestationValidator {
 
       // Perform a single signature verification
       const isValid = await this.verifyAttestation(
-        mfrPartitionCert,
+        leafCerts[0],
         signature,
         signedData,
       );
@@ -105,16 +86,16 @@ export class MarvellAttestationValidator {
       if (isValid) {
         const result: AttestationVerificationResult = {
           status: true,
-          signer: mfrPartitionCert,
-          chain: certs,
+          signer,
+          chain,
         };
         return result;
       } else {
         const result: AttestationVerificationResult = {
           status: false,
           error: new Error('Failed to verify the attestation signature.'),
-          signer: mfrPartitionCert,
-          chain: certs,
+          signer,
+          chain,
         };
         return result;
       }
@@ -127,12 +108,23 @@ export class MarvellAttestationValidator {
     }
   }
 
-  private getDefaultManufacturerRootCertificate(): x509.X509Certificate {
-    return MANUFACTURER_ROOT_CERT;
-  }
+  private async getCertificateChain(
+    rootCert: x509.X509Certificate,
+    certs: x509.X509Certificate[],
+  ): Promise<x509.X509Certificate[] | null> {
+    const chain: x509.X509Certificate[] = [rootCert];
+    let currentCert = rootCert;
 
-  private getDefaultOwnerRootCertificate(): x509.X509Certificate {
-    return OWNER_ROOT_CERT;
+    while (true) {
+      const issuedCert = await this.getIssuedCertificate(currentCert, certs);
+      if (!issuedCert) {
+        break;
+      }
+      chain.push(issuedCert);
+      currentCert = issuedCert;
+    }
+
+    return chain.length > 1 ? chain : null;
   }
 
   private async getIssuedCertificate(
