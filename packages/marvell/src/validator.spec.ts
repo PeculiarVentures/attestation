@@ -1,4 +1,5 @@
 import assert from 'node:assert';
+import * as zlib from 'node:zlib';
 import { AttestationVerificationFailure } from '@peculiar/attestation-common';
 import * as x509 from '@peculiar/x509';
 import { MarvellAttestationValidator } from './validator';
@@ -116,6 +117,23 @@ describe('Marvell:Validator', () => {
       'HSM:5.3G1953-ICM001225:PARTN:1, for FIPS mode',
     );
     assert.strictEqual(result.chain.length, 3);
+  });
+
+  it('should fail validation with corrupted signature', async () => {
+    const validator = new MarvellAttestationValidator();
+    const data = Buffer.from(base64CompressedData, 'base64');
+    const unpackedData = zlib.gunzipSync(data);
+
+    // Corrupt the data by modifying a byte
+    const corruptedData = unpackedData;
+    corruptedData[corruptedData.length - 1] ^= 0xff; // Flip the last byte
+
+    const pemChain = x509.PemConverter.decode(certChain);
+    const certs = pemChain.map((cert) => {
+      return new x509.X509Certificate(cert);
+    });
+    const result = await validator.validate(corruptedData, certs);
+    assert.strictEqual(result.status, false);
   });
 
   it('should throw an error if initialized with a single trusted certificate', () => {
