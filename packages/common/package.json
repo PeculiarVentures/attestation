@@ -1,7 +1,7 @@
 {
   "name": "@peculiar/attestation-common",
   "version": "1.0.0",
-  "description": "Common module for attestation packages",
+  "description": "A common module providing tools and interfaces for verifying HSM attestation files.",
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "types": "build/types/index.d.ts",

@@ -1,4 +1,5 @@
 import { X509Certificate, PublicKey } from '@peculiar/x509';
+
 export interface Attestation<T = any> {
   format: string;
   publicKey: PublicKey;
