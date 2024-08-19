@@ -51,7 +51,7 @@ export class MarvellAttestationProvider implements AttestationProvider {
 
     const { attestation, intermediateCerts } = params;
     const result = await this.validator.validate(
-      attestation.metadata,
+      attestation.metadata as MarvellAttestation,
       intermediateCerts,
     );
 

@@ -32,7 +32,9 @@ export class PivAttestationProvider implements AttestationProvider {
     const chainBuilder = new x509.X509ChainBuilder({
       certificates: [...params.intermediateCerts, ...trustedCerts],
     });
-    const chain = await chainBuilder.build(params.attestation.metadata);
+    const chain = await chainBuilder.build(
+      params.attestation.metadata as x509.X509Certificate,
+    );
 
     const rootCert = chain[chain.length - 1];
     if (trustedCerts.some((cert) => cert.equal(rootCert))) {
