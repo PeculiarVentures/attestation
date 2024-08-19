@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/attestation-common",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A common module providing tools and interfaces for verifying HSM attestation files.",
   "homepage": "https://github.com/PeculiarVentures/attestation/tree/master/packages/common#readme",
   "bugs": {
