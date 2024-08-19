@@ -48,6 +48,11 @@ const result = await provider.verify({
 console.log(result);
 ```
 
+## Links
+
+- [Google Cloud KMS Attestation](https://cloud.google.com/kms/docs/attest-key)
+- [Marvell Key attestation](https://www.marvell.com/products/security-solutions/nitrox-hs-adapters/software-key-attestation.html)
+
 ## License
 
 This project is licensed under the MIT License.
