@@ -1,7 +1,5 @@
 import assert from 'node:assert';
 import { PublicKeyExtractor } from './public_key';
-import { AsnConvert } from '@peculiar/asn1-schema';
-import { SubjectPublicKeyInfo } from '@peculiar/asn1-x509';
 import {
   Attributes,
   MarvellAttestation,

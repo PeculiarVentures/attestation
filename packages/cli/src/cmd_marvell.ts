@@ -121,13 +121,11 @@ const marvellCommand = program
   .command('marvell')
   .description('Marvell attestation commands');
 
-interface MarvellInfoOptions {}
-
 marvellCommand
   .command('info')
   .description('Detail the attestation')
   .argument('<attestation-file>', 'The attestation file path')
-  .action(async (attestationFile: string, options: MarvellInfoOptions) => {
+  .action(async (attestationFile: string) => {
     await detailAttestation(attestationFile);
   });
 

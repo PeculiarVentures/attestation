@@ -25,7 +25,7 @@ function parseAttribute(
 ): AttributeValue {
   const parseFunction = attributeTypeMap[tag];
   if (parseFunction) {
-    return parseFunction(value);
+    return parseFunction(value) as AttributeValue;
   }
   return value;
 }
@@ -47,7 +47,10 @@ function parseAttributeNumber(value: Uint8Array): number {
   ).getUint32(0, false);
 }
 
-function parseAttributeEnum(value: Uint8Array, enumType: any): any {
+function parseAttributeEnum(
+  value: Uint8Array,
+  enumType: Record<number, string>,
+): string {
   const enumValue = value[0];
   return enumType[enumValue];
 }
@@ -58,7 +61,7 @@ function parseAttributeDefault(value: Uint8Array): Uint8Array {
 
 const attributeTypeMap: Record<
   MarvellAttributeType,
-  (value: Uint8Array) => any
+  (value: Uint8Array) => unknown
 > = {
   [MarvellAttributeType.OBJ_ATTR_CLASS]: (value) =>
     parseAttributeEnum(value, CryptokiObjectClass),
@@ -126,12 +129,16 @@ export class MarvellAttestationParser {
 
   private readAttributes(offset: number, length: number): ObjectAttributes {
     this.reader.setPosition(offset);
+    const endPosition = offset + length;
     const handle = this.reader.readUint32();
     const attributeCount = this.reader.readUint32();
     const objectSize = this.reader.readUint32();
     const attributes: AttributeMap = {};
 
     for (let i = 0; i < attributeCount; i++) {
+      if (this.reader.getPosition() >= endPosition) {
+        break;
+      }
       const tag = this.reader.readUint32() as MarvellAttributeType;
       const attrLength = this.reader.readUint32();
       const value = this.reader.readBytes(attrLength);
@@ -166,9 +173,14 @@ export class MarvellAttestationParser {
     this.reader.setPosition(attestDataPosition);
 
     const infoHeader = this.readInfoHeader();
+    const firstKeyLength =
+      infoHeader.offsetSecondKey > 0
+        ? infoHeader.offsetSecondKey - infoHeader.offsetFirstKey
+        : responseHeader.bufferSize - infoHeader.offsetFirstKey;
+
     const firstKey = this.readAttributes(
       attestDataPosition + infoHeader.offsetFirstKey,
-      infoHeader.offsetSecondKey - infoHeader.offsetFirstKey,
+      firstKeyLength,
     );
     let secondKey: ObjectAttributes | undefined;
     if (infoHeader.offsetSecondKey !== 0) {
@@ -204,12 +216,12 @@ export class MarvellAttestationParser {
   }
 
   private simplifyAttributes(attributes: AttributeMap): Attributes {
-    const simplified: Record<string, any> = {};
+    const simplified: Record<string, unknown> = {};
     for (const { tag, value } of Object.values(attributes)) {
       const keyName =
         MarvellAttributeType[tag] ?? `0x${tag.toString(16).padStart(8, '0')}`;
       simplified[keyName] = parseAttribute(tag, value);
     }
-    return simplified as Attributes;
+    return simplified as unknown as Attributes;
   }
 }

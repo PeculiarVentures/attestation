@@ -6,17 +6,19 @@ export async function printPublicKey(publicKey: PublicKey, tab = '') {
   console.log(`${tab}Public Key:`);
   let alg = 'unknown';
   switch (publicKey.algorithm.name) {
-    case 'RSASSA-PKCS1-v1_5':
+    case 'RSASSA-PKCS1-v1_5': {
       alg = 'RSA';
       const key = await publicKey.export();
       const rsaAlg = key.algorithm as RsaKeyAlgorithm;
       alg += ` (${rsaAlg.modulusLength})`;
       break;
-    case 'ECDSA':
+    }
+    case 'ECDSA': {
       alg = 'EC';
       const ecAlg = publicKey.algorithm as EcKeyAlgorithm;
       alg += ` (${ecAlg.namedCurve})`;
       break;
+    }
   }
 
   console.log(`${tab}${TAB}Algorithm: ${alg}`);

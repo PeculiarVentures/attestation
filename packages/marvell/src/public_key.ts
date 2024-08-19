@@ -50,7 +50,7 @@ export class PublicKeyExtractor {
           keyUsages = ['encrypt', 'wrapKey'];
         }
         break;
-      case CryptokiKeyType.CKK_EC:
+      case CryptokiKeyType.CKK_EC: {
         const algName =
           attrs['OBJ_ATTR_VERIFY'] || attrs['OBJ_ATTR_SIGN'] ? 'ECDSA' : 'ECDH';
         keyUsages =
@@ -70,6 +70,7 @@ export class PublicKeyExtractor {
             throw new Error('Unsupported curve');
         }
         break;
+      }
       default:
         throw new Error('Unsupported key type');
     }

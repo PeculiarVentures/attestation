@@ -69,7 +69,7 @@ async function printAttestation(attestation: PivTokenAttestation, tab = '') {
 async function printSlotInfo(slot: SlotInfo, attestationId?: string, tab = '') {
   printSlotDetails(slot, tab);
   if (slot.caCertificate) {
-    let attestations = attestationId
+    const attestations = attestationId
       ? slot.attestations.filter((a) => a.id === attestationId)
       : slot.attestations;
     console.log();
@@ -89,7 +89,7 @@ const pivCommand = program
   .command('yubico')
   .description('Yubico attestation commands');
 
-interface PivInfoOptions extends PivCommonOptions {}
+type PivInfoOptions = PivCommonOptions;
 
 function getSlotIndex(options: PivCommonOptions): number {
   if (!options.slot) {
@@ -136,7 +136,7 @@ pivCommand
     }
   });
 
-interface PivVerifyOptions extends PivCommonOptions {}
+type PivVerifyOptions = PivCommonOptions;
 
 pivCommand
   .command('verify')

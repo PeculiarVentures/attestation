@@ -7,6 +7,8 @@
   "scripts": {
     "test": "mocha",
     "cli": "ts-node -r tsconfig-paths/register packages/cli/src/main.ts",
+    "lint": "eslint eslint.config.mjs packages/*/src/**/*.ts",
+    "lint:fix": "eslint --fix eslint.config.mjs packages/*/src/**/*.ts",
     "clean": "leran run clean",
     "build": "lerna run build",
     "coverage": "nyc mocha"
@@ -15,15 +17,19 @@
     "tsconfig-paths": "^4.2.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.9.0",
+    "@types/eslint__js": "^8.42.3",
     "@types/mocha": "^10.0.7",
     "@types/node": "^22.0.0",
     "@types/pako": "^2.0.3",
+    "eslint": "^9.9.0",
     "lerna": "^8.1.7",
     "mocha": "^10.7.0",
     "nyc": "^17.0.0",
     "reflect-metadata": "^0.2.2",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.1.0"
   }
 }

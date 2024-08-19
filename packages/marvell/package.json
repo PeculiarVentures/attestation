@@ -2,6 +2,10 @@
   "name": "@peculiar/attestation-marvell",
   "version": "1.0.0",
   "description": "A library providing tools to verify HSM attestation files from various HSMs that support Marvell attestation, including support for certificate chain validation and attestation data extraction.",
+  "homepage": "https://github.com/PeculiarVentures/attestation/tree/master/packages/marvell#readme",
+  "bugs": {
+    "url": "https://github.com/PeculiarVentures/attestation/issues"
+  },
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "types": "build/types/index.d.ts",

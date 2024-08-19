@@ -268,7 +268,6 @@ export enum CryptokiKeyType {
   CKK_DES3 = 0x15,
   CKK_CAST = 0x16,
   CKK_CAST3 = 0x17,
-  CKK_CAST5 = 0x18,
   CKK_CAST128 = 0x18,
   CKK_RC5 = 0x19,
   CKK_IDEA = 0x1a,
