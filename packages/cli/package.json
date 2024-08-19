@@ -1,0 +1,40 @@
+{
+  "name": "@peculiar/attestation-cli",
+  "version": "1.0.0",
+  "description": "A CLI utility for verifying attestation data in various formats, supporting multiple attestation providers and offering a range of commands to interact with attestation files and certificates.",
+  "homepage": "https://github.com/PeculiarVentures/attestation/tree/master/packages/cli#readme",
+  "bugs": {
+    "url": "https://github.com/PeculiarVentures/attestation/issues"
+  },
+  "bin": {
+    "attest": "./bin/main.js"
+  },
+  "main": "./bin/main.js",
+  "files": [
+    "bin",
+    "build",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
+  "dependencies": {
+    "@peculiar/attestation-marvell": "^1.0.0",
+    "@peculiar/attestation-yubico": "^1.0.0",
+    "@peculiar/x509": "^1.12.1",
+    "commander": "^12.1.0",
+    "tslib": "^2.6.3"
+  },
+  "scripts": {
+    "clean": "rimraf build",
+    "build": "npm run clean && tsc"
+  },
+  "keywords": [
+    "kms",
+    "attestation",
+    "google",
+    "cloud",
+    "hsm"
+  ],
+  "author": "PeculiarVentures",
+  "license": "MIT"
+}

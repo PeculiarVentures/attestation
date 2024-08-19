@@ -1,12 +1,8 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "build/types",
-    "declaration": true,
     "emitDeclarationOnly": true,
-  },
-  "exclude": [
-    "src/**/*.spec.ts",
-    "src/main.ts",
-  ]
+    "declaration": true,
+    "outDir": "./build/types",
+  }
 }

@@ -1,11 +1,7 @@
 {
   "extends": "./tsconfig.cjs.json",
   "compilerOptions": {
-    "module": "ESNext",
-    "outDir": "build/esm",
-  },
-  "exclude": [
-    "src/**/*.spec.ts",
-    "src/main.ts",
-  ]
+    "module": "ES2022",
+    "outDir": "./build/esm"
+  }
 }

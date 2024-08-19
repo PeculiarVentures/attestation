@@ -1,11 +1,14 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "CommonJS",
-    "moduleResolution": "Node",
-    "strict": true,
-    "esModuleInterop": true,
-    "noImplicitOverride": true,
-    "importHelpers": true
-  }
+    "baseUrl": ".",
+    "paths": {
+      "@peculiar/attestation-*": [
+        "packages/*/src"
+      ]
+    }
+  },
+  "exclude": [
+    "packages/*/build",
+  ]
 }

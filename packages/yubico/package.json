@@ -1,0 +1,40 @@
+{
+  "version": "1.0.0",
+  "name": "@peculiar/attestation-yubico",
+  "description": "A library providing tools to verify PIV attestation files from Yubico, including support for certificate chain validation and attestation data extraction.",
+  "homepage": "https://github.com/PeculiarVentures/attestation/tree/master/packages/yubico#readme",
+  "bugs": {
+    "url": "https://github.com/PeculiarVentures/attestation/issues"
+  },
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/types/index.d.ts",
+  "files": [
+    "build",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
+  "dependencies": {
+    "@peculiar/attestation-common": "^1.0.0",
+    "@peculiar/x509": "^1.12.1",
+    "graphene-pk11": "^2.3.5",
+    "tslib": "^2.6.3"
+  },
+  "scripts": {
+    "clean": "rimraf build",
+    "build": "npm run clean && npm run build:cjs && npm run build:esm && npm run build:types",
+    "build:cjs": "tsc --project tsconfig.cjs.json",
+    "build:esm": "tsc --project tsconfig.esm.json",
+    "build:types": "tsc --project tsconfig.types.json"
+  },
+  "keywords": [
+    "yubico",
+    "yubikey",
+    "piv",
+    "attestation",
+    "hsm"
+  ],
+  "author": "PeculiarVentures",
+  "license": "MIT"
+}
