@@ -16,10 +16,7 @@ export class MarvellAttestationValidator {
 
   constructor(params: MarvellAttestationValidatorParams = {}) {
     this.crypto = params.crypto || crypto;
-    this.rootCerts = params.trustedCerts || [
-      MANUFACTURER_ROOT_CERT,
-      OWNER_ROOT_CERT,
-    ];
+    this.rootCerts = params.trustedCerts || [MANUFACTURER_ROOT_CERT, OWNER_ROOT_CERT];
     if (this.rootCerts.length < 2) {
       throw new Error(
         'Invalid number of root certificates. At least two certificates are required.',
@@ -51,9 +48,7 @@ export class MarvellAttestationValidator {
       for (const rootCert of this.rootCerts) {
         const chain = await this.getCertificateChain(rootCert, certs);
         if (!chain) {
-          throw new Error(
-            'Failed to build certificate chain for root certificate',
-          );
+          throw new Error('Failed to build certificate chain for root certificate');
         }
         chains.push(chain);
       }
@@ -67,9 +62,7 @@ export class MarvellAttestationValidator {
       for (const cert of leafCerts) {
         const certKeyId = await cert.publicKey.getKeyIdentifier(this.crypto);
         if (!BufferSourceConverter.isEqual(keyId, certKeyId)) {
-          throw new Error(
-            'Public key mismatch between leaf certificates in different chains',
-          );
+          throw new Error('Public key mismatch between leaf certificates in different chains');
         }
       }
 
@@ -77,11 +70,7 @@ export class MarvellAttestationValidator {
       const signedData = attestation.signedData;
 
       // Perform a single signature verification
-      const isValid = await this.verifyAttestation(
-        leafCerts[0],
-        signature,
-        signedData,
-      );
+      const isValid = await this.verifyAttestation(leafCerts[0], signature, signedData);
 
       if (isValid) {
         const result: AttestationVerificationResult = {
@@ -157,11 +146,6 @@ export class MarvellAttestationValidator {
       hash: 'SHA-256',
     };
     const publicKey = await cert.publicKey.export(alg, ['verify'], this.crypto);
-    return await this.crypto.subtle.verify(
-      alg,
-      publicKey,
-      signature,
-      signedData,
-    );
+    return await this.crypto.subtle.verify(alg, publicKey, signature, signedData);
   }
 }
