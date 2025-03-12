@@ -5,31 +5,31 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "mocha",
-    "cli": "ts-node -r tsconfig-paths/register packages/cli/src/main.ts",
+    "test": "jest",
+    "cli": "tsx packages/cli/src/main.ts",
     "lint": "eslint eslint.config.mjs packages/*/src/**/*.ts",
     "lint:fix": "eslint --fix eslint.config.mjs packages/*/src/**/*.ts",
     "clean": "leran run clean",
     "build": "lerna run build",
-    "coverage": "nyc mocha"
+    "coverage": "jest --coverage"
   },
   "dependencies": {
-    "tsconfig-paths": "^4.2.0"
+    "@peculiar/eslint-config-base": "^0.2.1",
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.6",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.19.3"
   },
   "devDependencies": {
-    "@eslint/js": "^9.9.0",
-    "@types/eslint__js": "^8.42.3",
-    "@types/mocha": "^10.0.7",
-    "@types/node": "^22.0.0",
+    "@eslint/js": "^9.22.0",
+    "@types/node": "^22.13.10",
     "@types/pako": "^2.0.3",
-    "eslint": "^9.9.0",
-    "lerna": "^8.1.7",
-    "mocha": "^10.7.0",
-    "nyc": "^17.0.0",
+    "eslint": "^9.22.0",
+    "lerna": "^8.2.1",
     "reflect-metadata": "^0.2.2",
     "rimraf": "^6.0.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.5.4",
-    "typescript-eslint": "^8.1.0"
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.26.1"
   }
 }

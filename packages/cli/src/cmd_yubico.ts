@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import os from 'node:os';
-import x509 from '@peculiar/x509';
+import * as x509 from '@peculiar/x509';
 import {
   SlotInfo,
   PivTokenManager,

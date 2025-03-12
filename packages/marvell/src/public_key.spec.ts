@@ -1,10 +1,5 @@
-import assert from 'node:assert';
 import { PublicKeyExtractor } from './public_key';
-import {
-  Attributes,
-  MarvellAttestation,
-  MarvellAttestationFlags,
-} from './attestation';
+import { Attributes, MarvellAttestation, MarvellAttestationFlags } from './attestation';
 
 describe('Marvell:PublicKeyExtractor', () => {
   const data = Buffer.from('test data to sign');
@@ -49,24 +44,20 @@ describe('Marvell:PublicKeyExtractor', () => {
 
   vector.forEach((item) => {
     it(`should extract the public key for ${item.name}`, async () => {
-      const keys = await crypto.subtle.generateKey(item.algorithm, true, [
-        'sign',
-        'verify',
-      ]);
+      const keys = await crypto.subtle.generateKey(item.algorithm, true, ['sign', 'verify']);
       const signingAlgorithm = { hash, ...item.algorithm };
-      const signature = await crypto.subtle.sign(
-        signingAlgorithm,
-        keys.privateKey,
-        data,
-      );
+      const signature = await crypto.subtle.sign(signingAlgorithm, keys.privateKey, data);
 
       const attributes = {} as Attributes;
       if (item.algorithm.name.startsWith('RSA')) {
         const jwk = await crypto.subtle.exportKey('jwk', keys.publicKey);
         attributes.OBJ_ATTR_KEY_TYPE = 'CKK_RSA';
         attributes.OBJ_ATTR_VERIFY = true;
-        attributes.OBJ_ATTR_MODULUS = Buffer.from(jwk.n!, 'base64url');
-        attributes.OBJ_ATTR_PUBLIC_EXPONENT = Buffer.from(jwk.e!, 'base64url');
+        if (!jwk.n || !jwk.e) {
+          throw new Error('Invalid JWK');
+        }
+        attributes.OBJ_ATTR_MODULUS = Buffer.from(jwk.n, 'base64url');
+        attributes.OBJ_ATTR_PUBLIC_EXPONENT = Buffer.from(jwk.e, 'base64url');
       } else {
         const raw = await crypto.subtle.exportKey('raw', keys.publicKey);
         attributes.OBJ_ATTR_KEY_TYPE = 'CKK_EC';
@@ -103,13 +94,8 @@ describe('Marvell:PublicKeyExtractor', () => {
 
       const publicKey = extractor.extractPublicKey(attest);
       const key = await publicKey.export(signingAlgorithm, ['verify']);
-      const ok = await crypto.subtle.verify(
-        signingAlgorithm,
-        key,
-        signature,
-        data,
-      );
-      assert.strictEqual(ok, true);
+      const ok = await crypto.subtle.verify(signingAlgorithm, key, signature, data);
+      expect(ok).toBe(true);
     });
   });
 });

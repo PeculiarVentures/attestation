@@ -1,9 +1,0 @@
-extension: 
-  - ".ts"
-include:
-  - "packages/*/src/**/*.ts"
-exclude:
-  - "**/*.spec.ts"
-reporter:
-  - lcov
-  - text-summary

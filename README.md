@@ -1,5 +1,7 @@
 # Attestation
 
+[![Coverage Status](https://coveralls.io/repos/github/PeculiarVentures/attestation/badge.svg?branch=ci-fix-auth)](https://coveralls.io/github/PeculiarVentures/attestation?branch=ci-fix-auth)
+
 This repository contains a collection of libraries and tools for verifying HSM attestation files from various HSMs, including support for certificate chain validation and attestation data extraction.
 
 ## Packages
