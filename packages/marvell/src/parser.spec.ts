@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import 'reflect-metadata';
 import { MarvellAttestationParser } from './parser';
 
@@ -12,13 +11,13 @@ describe('Marvell:Parser', () => {
   it('should correctly parse ECC data', async () => {
     const parser = new MarvellAttestationParser();
     const result = parser.parse(Buffer.from(eccData, 'base64'));
-    assert.strictEqual(result.attestationData.firstKey.attributes.OBJ_ATTR_KEY_TYPE, 'CKK_EC');
+    expect(result.attestationData.firstKey.attributes.OBJ_ATTR_KEY_TYPE).toBe('CKK_EC');
   });
 
   it('should correctly parse RSA data', () => {
     const parser = new MarvellAttestationParser();
     const result = parser.parse(Buffer.from(rsaData, 'base64'));
-    assert.strictEqual(result.attestationData.firstKey.attributes.OBJ_ATTR_KEY_TYPE, 'CKK_RSA');
-    assert.ok(!result.attestationData.secondKey);
+    expect(result.attestationData.firstKey.attributes.OBJ_ATTR_KEY_TYPE).toBe('CKK_RSA');
+    expect(result.attestationData.secondKey).toBeFalsy();
   });
 });

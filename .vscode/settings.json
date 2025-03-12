@@ -15,5 +15,7 @@
     "**/node_modules": true,
     "**/build": true,
     "**/bin": true,
-  }
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "jest.runMode": "on-demand"
 }

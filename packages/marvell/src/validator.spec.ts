@@ -1,6 +1,4 @@
-import assert from 'node:assert';
 import * as zlib from 'node:zlib';
-import { AttestationVerificationFailure } from '@peculiar/attestation-common';
 import * as x509 from '@peculiar/x509';
 import { MarvellAttestationValidator } from './validator';
 import { OWNER_ROOT_CERT } from './certs';
@@ -107,16 +105,11 @@ describe('Marvell:Validator', () => {
       return new x509.X509Certificate(cert);
     });
     const result = await validator.validate(data, certs);
-    assert.strictEqual(
-      result.status,
-      true,
-      (result as AttestationVerificationFailure).error?.message,
-    );
-    assert.strictEqual(
-      result.signer.subjectName.getField('CN')[0],
+    expect(result.status).toBe(true);
+    expect(result.signer?.subjectName.getField('CN')[0]).toBe(
       'HSM:5.3G1953-ICM001225:PARTN:1, for FIPS mode',
     );
-    assert.strictEqual(result.chain.length, 3);
+    expect(result.chain).toHaveLength(3);
   });
 
   it('should fail validation with corrupted signature', async () => {
@@ -133,14 +126,14 @@ describe('Marvell:Validator', () => {
       return new x509.X509Certificate(cert);
     });
     const result = await validator.validate(corruptedData, certs);
-    assert.strictEqual(result.status, false);
+    expect(result.status).toBe(false);
   });
 
   it('should throw an error if initialized with a single trusted certificate', () => {
-    assert.throws(() => {
+    expect(() => {
       new MarvellAttestationValidator({
         trustedCerts: [OWNER_ROOT_CERT],
       });
-    });
+    }).toThrow();
   });
 });

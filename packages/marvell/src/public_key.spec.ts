@@ -1,4 +1,3 @@
-import assert from 'node:assert';
 import { PublicKeyExtractor } from './public_key';
 import { Attributes, MarvellAttestation, MarvellAttestationFlags } from './attestation';
 
@@ -54,8 +53,9 @@ describe('Marvell:PublicKeyExtractor', () => {
         const jwk = await crypto.subtle.exportKey('jwk', keys.publicKey);
         attributes.OBJ_ATTR_KEY_TYPE = 'CKK_RSA';
         attributes.OBJ_ATTR_VERIFY = true;
-        assert.ok(jwk.n, 'missing modulus');
-        assert.ok(jwk.e, 'missing exponent');
+        if (!jwk.n || !jwk.e) {
+          throw new Error('Invalid JWK');
+        }
         attributes.OBJ_ATTR_MODULUS = Buffer.from(jwk.n, 'base64url');
         attributes.OBJ_ATTR_PUBLIC_EXPONENT = Buffer.from(jwk.e, 'base64url');
       } else {
@@ -95,7 +95,7 @@ describe('Marvell:PublicKeyExtractor', () => {
       const publicKey = extractor.extractPublicKey(attest);
       const key = await publicKey.export(signingAlgorithm, ['verify']);
       const ok = await crypto.subtle.verify(signingAlgorithm, key, signature, data);
-      assert.strictEqual(ok, true);
+      expect(ok).toBe(true);
     });
   });
 });
