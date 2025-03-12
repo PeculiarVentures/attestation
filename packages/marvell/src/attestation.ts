@@ -4,11 +4,15 @@ export enum MarvellAttestationFlags {
    */
   KEY_GEN_FLAG_GET_ATTR = 0x0001,
   /**
-   * Gets RSA sign of the data as part of the response. This sign is obtained by signing the response header along with attributes (if fetched).
+   * Gets RSA sign of the data as part of the response. This sign is obtained by signing the
+   * response header along with attributes (if fetched).
    */
   KEY_GEN_FLAG_GET_ATTEST = 0x0002,
   /**
-   * Excludes the response header and gets only the sign of the attributes. This flag is valid only if KEY_GEN_FLAG_GET_ATTEST is set. If attribute flag (KEY_GEN_FLAG_GET_ATTR) is not specified and KEY_GEN_FLAG_EXCLUDE_HEADER flag is set, attestation will fail as there is no data to sign.
+   * Excludes the response header and gets only the sign of the attributes. This flag is valid
+   * only if KEY_GEN_FLAG_GET_ATTEST is set. If attribute flag (KEY_GEN_FLAG_GET_ATTR) is not
+   * specified and KEY_GEN_FLAG_EXCLUDE_HEADER flag is set, attestation will fail as there is
+   * no data to sign.
    */
   KEY_GEN_FLAG_EXCLUDE_HEADER = 0x0004,
 }
@@ -58,12 +62,14 @@ export enum MarvellAttributeType {
   OBJ_ATTR_SENSITIVE = 0x0103,
 
   /**
-   * Indicates if key can be used to encrypt data for operations like RSA_Encrypt. Not applicable to EC keys.
+   * Indicates if key can be used to encrypt data for operations like RSA_Encrypt.
+   * Not applicable to EC keys.
    */
   OBJ_ATTR_ENCRYPT = 0x0104,
 
   /**
-   * Indicates if key can be used to decrypt data for operations like RSA_Decrypt. Not applicable to EC keys.
+   * Indicates if key can be used to decrypt data for operations like RSA_Decrypt.
+   * Not applicable to EC keys.
    */
   OBJ_ATTR_DECRYPT = 0x0105,
 
@@ -317,12 +323,14 @@ export interface Attributes {
   ['OBJ_ATTR_SENSITIVE']: boolean;
 
   /**
-   * Indicates if key can be used to encrypt data for operations like RSA_Encrypt. Not applicable to EC keys.
+   * Indicates if key can be used to encrypt data for operations like RSA_Encrypt.
+   * Not applicable to EC keys.
    */
   ['OBJ_ATTR_ENCRYPT']: boolean;
 
   /**
-   * Indicates if key can be used to decrypt data for operations like RSA_Decrypt. Not applicable to EC keys.
+   * Indicates if key can be used to decrypt data for operations like RSA_Decrypt.
+   * Not applicable to EC keys.
    */
   ['OBJ_ATTR_DECRYPT']: boolean;
 

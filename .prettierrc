@@ -3,11 +3,13 @@
     {
       "files": [
         "*.ts",
-        "*.js"
+        "*.js",
+        "*.mjs"
       ],
       "options": {
         "singleQuote": true,
-        "trailingComma": "all"
+        "trailingComma": "all",
+        "printWidth": 100
       }
     }
   ]

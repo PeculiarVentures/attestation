@@ -1,5 +1,16 @@
 // @ts-check
-import eslint from "@eslint/js";
-import tseslint from "typescript-eslint";
+import baseConfig from '@peculiar/eslint-config-base';
+import tseslint from 'typescript-eslint';
 
-export default [eslint.configs.recommended, ...tseslint.configs.recommended];
+export default tseslint.config([
+  ...baseConfig,
+  {
+    rules: {
+      'import/no-unresolved': ['off'],
+      '@stylistic/object-curly-newline': ['off'],
+      '@stylistic/operator-linebreak': ['off'],
+      '@stylistic/padding-line-between-statements': ['off'],
+      '@typescript-eslint/naming-convention': ['off'],
+    },
+  },
+]);
