@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import '@abraham/reflection';
 import { program } from './program';
 
 import './cmd_yubico';
