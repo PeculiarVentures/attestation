@@ -60,19 +60,15 @@ export class PivTokenManager {
       for (const obj of objects) {
         const certObj = obj.toType<graphene.X509Certificate>();
 
-        if (
-          /^X\.509 Certificate for PIV Attestation [0-9a-f]{2}$/.test(
-            certObj.label,
-          )
-        ) {
-          const cert = new x509.X509Certificate(certObj.value);
+        if (/^X\.509 Certificate for PIV Attestation [0-9a-f]{2}$/.test(certObj.label)) {
+          const cert = new x509.X509Certificate(certObj.value as BufferSource);
           availableAttestations.push({
             certificate: cert,
             id: certObj.id.toString('hex'),
             label: certObj.label,
           });
         } else if (certObj.label === 'X.509 Certificate for PIV Attestation') {
-          caCertificate = new x509.X509Certificate(certObj.value);
+          caCertificate = new x509.X509Certificate(certObj.value as BufferSource);
         }
       }
 
