@@ -4,6 +4,13 @@ A common module providing tools and interfaces for verifying HSM attestation fil
 
 ## Installation
 
+> ⚠️ This package depends on `@peculiar/x509`, which requires Reflect metadata support at runtime.
+> Import `@abraham/reflection` (or another compatible polyfill) once at application startup before any attestation-related code.
+>
+> ```ts
+> import '@abraham/reflection';
+> ```
+
 To install the library, use npm:
 
 ```sh

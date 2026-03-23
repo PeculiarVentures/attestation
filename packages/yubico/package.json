@@ -17,7 +17,7 @@
   ],
   "dependencies": {
     "@peculiar/attestation-common": "^1.1.1",
-    "@peculiar/x509": "^1.12.3",
+    "@peculiar/x509": "^2.0.0",
     "graphene-pk11": "^2.3.6",
     "tslib": "^2.8.1"
   },
