@@ -1,8 +1,4 @@
-import {
-  AlgorithmProvider,
-  diAlgorithmProvider,
-  PublicKey,
-} from '@peculiar/x509';
+import { AlgorithmProvider, diAlgorithmProvider, PublicKey } from '@peculiar/x509';
 import { SubjectPublicKeyInfo } from '@peculiar/asn1-x509';
 import { RSAPublicKey } from '@peculiar/asn1-rsa';
 import { AsnConvert } from '@peculiar/asn1-schema';
@@ -28,16 +24,10 @@ export class PublicKeyExtractor {
    * @param attestation - The KmsAttestation object.
    * @returns The algorithm and key usages.
    */
-  private determineAlgorithmAndKeyUsages(
-    attestation: MarvellAttestation,
-  ): AlgorithmAndKeyUsages {
+  private determineAlgorithmAndKeyUsages(attestation: MarvellAttestation): AlgorithmAndKeyUsages {
     const attrs = attestation.attestationData.firstKey.attributes;
     const keyType = CryptokiKeyType[attrs['OBJ_ATTR_KEY_TYPE']];
-    let algorithm:
-      | Algorithm
-      | RsaHashedImportParams
-      | EcKeyImportParams
-      | undefined;
+    let algorithm: Algorithm | RsaHashedImportParams | EcKeyImportParams | undefined;
     let keyUsages: KeyUsage[];
 
     switch (keyType) {
@@ -51,10 +41,8 @@ export class PublicKeyExtractor {
         }
         break;
       case CryptokiKeyType.CKK_EC: {
-        const algName =
-          attrs['OBJ_ATTR_VERIFY'] || attrs['OBJ_ATTR_SIGN'] ? 'ECDSA' : 'ECDH';
-        keyUsages =
-          algName === 'ECDSA' ? ['verify'] : ['deriveKey', 'deriveBits'];
+        const algName = attrs['OBJ_ATTR_VERIFY'] || attrs['OBJ_ATTR_SIGN'] ? 'ECDSA' : 'ECDH';
+        keyUsages = algName === 'ECDSA' ? ['verify'] : ['deriveKey', 'deriveBits'];
         const valueLen = attrs['OBJ_ATTR_VALUE_LEN'];
         switch (valueLen) {
           case 65:
@@ -88,11 +76,11 @@ export class PublicKeyExtractor {
     const attributes = attestation.attestationData.firstKey.attributes;
     const modulus = attributes['OBJ_ATTR_MODULUS'];
 
-    let subjectPublicKey: ArrayBuffer = modulus;
+    let subjectPublicKey = modulus as unknown as ArrayBuffer;
     if (algorithm.name.startsWith('RSA')) {
       const rsaPublicKey = new RSAPublicKey({
-        modulus: modulus,
-        publicExponent: attributes['OBJ_ATTR_PUBLIC_EXPONENT'],
+        modulus: subjectPublicKey,
+        publicExponent: attributes['OBJ_ATTR_PUBLIC_EXPONENT'] as unknown as ArrayBuffer,
       });
       subjectPublicKey = AsnConvert.serialize(rsaPublicKey);
     }

@@ -38,7 +38,7 @@ export class MarvellAttestationValidator {
       let attestation: MarvellAttestation;
       if (BufferSourceConverter.isBufferSource(data)) {
         const parser = new MarvellAttestationParser();
-        attestation = parser.parse(data);
+        attestation = parser.parse(data as BufferSource);
       } else {
         attestation = data;
       }
@@ -146,6 +146,11 @@ export class MarvellAttestationValidator {
       hash: 'SHA-256',
     };
     const publicKey = await cert.publicKey.export(alg, ['verify'], this.crypto);
-    return await this.crypto.subtle.verify(alg, publicKey, signature, signedData);
+    return await this.crypto.subtle.verify(
+      alg,
+      publicKey,
+      signature as BufferSource,
+      signedData as BufferSource,
+    );
   }
 }
