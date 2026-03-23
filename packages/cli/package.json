@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/attestation-cli",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "description": "A CLI utility for verifying attestation data in various formats, supporting multiple attestation providers and offering a range of commands to interact with attestation files and certificates.",
   "homepage": "https://github.com/PeculiarVentures/attestation/tree/master/packages/cli#readme",
   "bugs": {
@@ -19,8 +19,8 @@
   ],
   "dependencies": {
     "@abraham/reflection": "^0.13.0",
-    "@peculiar/attestation-marvell": "^1.1.1",
-    "@peculiar/attestation-yubico": "^1.1.1",
+    "@peculiar/attestation-marvell": "^2.0.0",
+    "@peculiar/attestation-yubico": "^2.0.0",
     "@peculiar/x509": "^2.0.0",
     "commander": "^14.0.3",
     "tslib": "^2.8.1"
