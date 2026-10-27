@@ -1,4 +1,4 @@
-import { X509Certificate, PublicKey } from '@peculiar/x509';
+import { X509Certificate, PublicKey } from "@peculiar/x509";
 
 export interface Attestation<T = unknown> {
   format: string;
@@ -25,9 +25,7 @@ export interface AttestationVerificationFailure {
   chain?: X509Certificate[];
 }
 
-export type AttestationVerificationResult =
-  | AttestationVerificationSuccess
-  | AttestationVerificationFailure;
+export type AttestationVerificationResult = AttestationVerificationSuccess | AttestationVerificationFailure;
 
 /**
  * Interface representing an attestation provider.
@@ -53,7 +51,5 @@ export interface AttestationProvider {
    * @param params - The parameters required for attestation verification.
    * @returns A promise that resolves to an AttestationVerificationResult object.
    */
-  verify(
-    params: AttestationVerificationParams,
-  ): Promise<AttestationVerificationResult>;
+  verify(params: AttestationVerificationParams): Promise<AttestationVerificationResult>;
 }

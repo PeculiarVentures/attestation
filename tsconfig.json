@@ -3,12 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@peculiar/attestation-*": [
-        "packages/*/src"
-      ]
+      "@peculiar/attestation-*": ["packages/*/src"]
     }
   },
-  "exclude": [
-    "packages/*/build",
-  ]
+  "exclude": ["packages/*/build"]
 }

@@ -1,9 +1,9 @@
-import { AttestationVerificationResult } from '@peculiar/attestation-common';
-import x509 from '@peculiar/x509';
-import { BufferSourceConverter } from 'pvtsutils';
-import { MarvellAttestation } from './attestation';
-import { MarvellAttestationParser } from './parser';
-import { MANUFACTURER_ROOT_CERT, OWNER_ROOT_CERT } from './certs';
+import { AttestationVerificationResult } from "@peculiar/attestation-common";
+import * as x509 from "@peculiar/x509";
+import { BufferSourceConverter } from "pvtsutils";
+import { MarvellAttestation } from "./attestation";
+import { MarvellAttestationParser } from "./parser";
+import { MANUFACTURER_ROOT_CERT, OWNER_ROOT_CERT } from "./certs";
 
 export interface MarvellAttestationValidatorParams {
   crypto?: Crypto;
@@ -18,9 +18,7 @@ export class MarvellAttestationValidator {
     this.crypto = params.crypto || crypto;
     this.rootCerts = params.trustedCerts || [MANUFACTURER_ROOT_CERT, OWNER_ROOT_CERT];
     if (this.rootCerts.length < 2) {
-      throw new Error(
-        'Invalid number of root certificates. At least two certificates are required.',
-      );
+      throw new Error("Invalid number of root certificates. At least two certificates are required.");
     }
   }
 
@@ -30,10 +28,7 @@ export class MarvellAttestationValidator {
    * @param certChain - The certificate chain used to validate the attestation data.
    * @returns A promise that resolves with an object containing the validation result.
    */
-  public async validate(
-    data: Uint8Array | MarvellAttestation,
-    certs: x509.X509Certificate[],
-  ): Promise<AttestationVerificationResult> {
+  public async validate(data: Uint8Array | MarvellAttestation, certs: x509.X509Certificate[]): Promise<AttestationVerificationResult> {
     try {
       let attestation: MarvellAttestation;
       if (BufferSourceConverter.isBufferSource(data)) {
@@ -48,7 +43,7 @@ export class MarvellAttestationValidator {
       for (const rootCert of this.rootCerts) {
         const chain = await this.getCertificateChain(rootCert, certs);
         if (!chain) {
-          throw new Error('Failed to build certificate chain for root certificate');
+          throw new Error("Failed to build certificate chain for root certificate");
         }
         chains.push(chain);
       }
@@ -62,7 +57,7 @@ export class MarvellAttestationValidator {
       for (const cert of leafCerts) {
         const certKeyId = await cert.publicKey.getKeyIdentifier(this.crypto);
         if (!BufferSourceConverter.isEqual(keyId, certKeyId)) {
-          throw new Error('Public key mismatch between leaf certificates in different chains');
+          throw new Error("Public key mismatch between leaf certificates in different chains");
         }
       }
 
@@ -82,7 +77,7 @@ export class MarvellAttestationValidator {
       } else {
         const result: AttestationVerificationResult = {
           status: false,
-          error: new Error('Failed to verify the attestation signature.'),
+          error: new Error("Failed to verify the attestation signature."),
           signer,
           chain,
         };
@@ -97,10 +92,7 @@ export class MarvellAttestationValidator {
     }
   }
 
-  private async getCertificateChain(
-    rootCert: x509.X509Certificate,
-    certs: x509.X509Certificate[],
-  ): Promise<x509.X509Certificate[] | null> {
+  private async getCertificateChain(rootCert: x509.X509Certificate, certs: x509.X509Certificate[]): Promise<x509.X509Certificate[] | null> {
     const chain: x509.X509Certificate[] = [rootCert];
     let currentCert = rootCert;
 
@@ -116,11 +108,7 @@ export class MarvellAttestationValidator {
     return chain.length > 1 ? chain : null;
   }
 
-  private async getIssuedCertificate(
-    rootCert: x509.X509Certificate,
-    certs: x509.X509Certificate[],
-    predicate?: (cert: x509.X509Certificate) => boolean,
-  ): Promise<x509.X509Certificate | null> {
+  private async getIssuedCertificate(rootCert: x509.X509Certificate, certs: x509.X509Certificate[], predicate?: (cert: x509.X509Certificate) => boolean): Promise<x509.X509Certificate | null> {
     for (const cert of certs) {
       if (cert.issuer === rootCert.subject && (!predicate || predicate(cert))) {
         const ok = await cert.verify({
@@ -128,7 +116,7 @@ export class MarvellAttestationValidator {
           signatureOnly: true,
         });
         if (!ok) {
-          throw new Error('Failed to verify the certificate chain.');
+          throw new Error("Failed to verify the certificate chain.");
         }
         return cert;
       }
@@ -136,21 +124,12 @@ export class MarvellAttestationValidator {
     return null;
   }
 
-  private async verifyAttestation(
-    cert: x509.X509Certificate,
-    signature: Uint8Array,
-    signedData: Uint8Array,
-  ): Promise<boolean> {
+  private async verifyAttestation(cert: x509.X509Certificate, signature: Uint8Array, signedData: Uint8Array): Promise<boolean> {
     const alg = {
-      name: 'RSASSA-PKCS1-v1_5',
-      hash: 'SHA-256',
+      name: "RSASSA-PKCS1-v1_5",
+      hash: "SHA-256",
     };
-    const publicKey = await cert.publicKey.export(alg, ['verify'], this.crypto);
-    return await this.crypto.subtle.verify(
-      alg,
-      publicKey,
-      signature as BufferSource,
-      signedData as BufferSource,
-    );
+    const publicKey = await cert.publicKey.export(alg, ["verify"], this.crypto);
+    return await this.crypto.subtle.verify(alg, publicKey, signature as BufferSource, signedData as BufferSource);
   }
 }

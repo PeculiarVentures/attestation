@@ -8,7 +8,7 @@ A library providing tools to verify PIV attestation files from Yubico, including
 > Import `@abraham/reflection` (or another compatible polyfill) once at application startup before any attestation-related code.
 >
 > ```ts
-> import '@abraham/reflection';
+> import "@abraham/reflection";
 > ```
 
 To install the library, use npm:
@@ -22,10 +22,7 @@ npm install @peculiar/attestation-yubico
 This example demonstrates how to verify a PIV attestation from a Yubico token:
 
 ```typescript
-import {
-  PivTokenManager,
-  PivAttestationProvider,
-} from "@peculiar/attestation-yubico";
+import { PivTokenManager, PivAttestationProvider } from "@peculiar/attestation-yubico";
 
 // Initialize the PivTokenManager
 const tokenManager = new PivTokenManager("/path/to/token");

@@ -1,6 +1,6 @@
-import * as pako from 'pako';
-import { BufferSourceConverter, Convert } from 'pvtsutils';
-import { DataViewReader } from './view_reader';
+import * as pako from "pako";
+import { BufferSourceConverter, Convert } from "pvtsutils";
+import { DataViewReader } from "./view_reader";
 import {
   AttributeMap,
   MarvellAttributeType,
@@ -13,16 +13,13 @@ import {
   MarvellAttestation,
   AttributeValue,
   MarvellAttestationData,
-} from './attestation';
+} from "./attestation";
 
 function isGZIP(data: Uint8Array): boolean {
   return data[0] === 0x1f && data[1] === 0x8b;
 }
 
-function parseAttribute(
-  tag: MarvellAttributeType,
-  value: Uint8Array,
-): AttributeValue {
+function parseAttribute(tag: MarvellAttributeType, value: Uint8Array): AttributeValue {
   const parseFunction = attributeTypeMap[tag];
   if (parseFunction) {
     return parseFunction(value) as AttributeValue;
@@ -40,17 +37,10 @@ function parseAttributeText(value: Uint8Array): string {
 }
 
 function parseAttributeNumber(value: Uint8Array): number {
-  return new DataView(
-    value.buffer,
-    value.byteOffset,
-    value.byteLength,
-  ).getUint32(0, false);
+  return new DataView(value.buffer, value.byteOffset, value.byteLength).getUint32(0, false);
 }
 
-function parseAttributeEnum(
-  value: Uint8Array,
-  enumType: Record<number, string>,
-): string {
+function parseAttributeEnum(value: Uint8Array, enumType: Record<number, string>): string {
   const enumValue = value[0];
   return enumType[enumValue];
 }
@@ -59,12 +49,8 @@ function parseAttributeDefault(value: Uint8Array): Uint8Array {
   return value;
 }
 
-const attributeTypeMap: Record<
-  MarvellAttributeType,
-  (value: Uint8Array) => unknown
-> = {
-  [MarvellAttributeType.OBJ_ATTR_CLASS]: (value) =>
-    parseAttributeEnum(value, CryptokiObjectClass),
+const attributeTypeMap: Record<MarvellAttributeType, (value: Uint8Array) => unknown> = {
+  [MarvellAttributeType.OBJ_ATTR_CLASS]: (value) => parseAttributeEnum(value, CryptokiObjectClass),
   [MarvellAttributeType.OBJ_ATTR_TOKEN]: parseAttributeBoolean,
   [MarvellAttributeType.OBJ_ATTR_PRIVATE]: parseAttributeBoolean,
   [MarvellAttributeType.OBJ_ATTR_TRUSTED]: parseAttributeBoolean,
@@ -84,8 +70,7 @@ const attributeTypeMap: Record<
   [MarvellAttributeType.OBJ_ATTR_SPLITTABLE]: parseAttributeBoolean,
   [MarvellAttributeType.OBJ_ATTR_IS_SPLIT]: parseAttributeBoolean,
   [MarvellAttributeType.OBJ_ATTR_LABEL]: parseAttributeText,
-  [MarvellAttributeType.OBJ_ATTR_KEY_TYPE]: (value) =>
-    parseAttributeEnum(value, CryptokiKeyType),
+  [MarvellAttributeType.OBJ_ATTR_KEY_TYPE]: (value) => parseAttributeEnum(value, CryptokiKeyType),
   [MarvellAttributeType.OBJ_ATTR_ID]: parseAttributeText,
   [MarvellAttributeType.OBJ_ATTR_MODULUS_BITS]: parseAttributeNumber,
   [MarvellAttributeType.OBJ_ATTR_VALUE_LEN]: parseAttributeNumber,
@@ -167,32 +152,19 @@ export class MarvellAttestationParser {
 
     const responseHeader = this.readResponseHeader();
 
-    const attestDataPosition =
-      view.byteLength -
-      (responseHeader.bufferSize + MarvellAttestationParser.SIGNATURE_SIZE);
+    const attestDataPosition = view.byteLength - (responseHeader.bufferSize + MarvellAttestationParser.SIGNATURE_SIZE);
     this.reader.setPosition(attestDataPosition);
 
     const infoHeader = this.readInfoHeader();
-    const firstKeyLength =
-      infoHeader.offsetSecondKey > 0
-        ? infoHeader.offsetSecondKey - infoHeader.offsetFirstKey
-        : responseHeader.bufferSize - infoHeader.offsetFirstKey;
+    const firstKeyLength = infoHeader.offsetSecondKey > 0 ? infoHeader.offsetSecondKey - infoHeader.offsetFirstKey : responseHeader.bufferSize - infoHeader.offsetFirstKey;
 
-    const firstKey = this.readAttributes(
-      attestDataPosition + infoHeader.offsetFirstKey,
-      firstKeyLength,
-    );
+    const firstKey = this.readAttributes(attestDataPosition + infoHeader.offsetFirstKey, firstKeyLength);
     let secondKey: ObjectAttributes | undefined;
     if (infoHeader.offsetSecondKey !== 0) {
-      secondKey = this.readAttributes(
-        attestDataPosition + infoHeader.offsetSecondKey,
-        responseHeader.bufferSize - infoHeader.offsetSecondKey,
-      );
+      secondKey = this.readAttributes(attestDataPosition + infoHeader.offsetSecondKey, responseHeader.bufferSize - infoHeader.offsetSecondKey);
     }
 
-    this.reader.setPosition(
-      view.byteLength - MarvellAttestationParser.SIGNATURE_SIZE,
-    );
+    this.reader.setPosition(view.byteLength - MarvellAttestationParser.SIGNATURE_SIZE);
     const signature = this.readSignature();
 
     const attestationData: MarvellAttestationData = {
@@ -207,10 +179,7 @@ export class MarvellAttestationParser {
       compressed,
       responseHeader,
       attestationData,
-      signedData: view.subarray(
-        0,
-        view.byteLength - MarvellAttestationParser.SIGNATURE_SIZE,
-      ),
+      signedData: view.subarray(0, view.byteLength - MarvellAttestationParser.SIGNATURE_SIZE),
       signature,
     };
   }
@@ -218,8 +187,7 @@ export class MarvellAttestationParser {
   private simplifyAttributes(attributes: AttributeMap): Attributes {
     const simplified: Record<string, unknown> = {};
     for (const { tag, value } of Object.values(attributes)) {
-      const keyName =
-        MarvellAttributeType[tag] ?? `0x${tag.toString(16).padStart(8, '0')}`;
+      const keyName = MarvellAttributeType[tag] ?? `0x${tag.toString(16).padStart(8, "0")}`;
       simplified[keyName] = parseAttribute(tag, value);
     }
     return simplified as unknown as Attributes;

@@ -30,6 +30,10 @@ This utility is designed for verifying attestation data in various formats. It s
 
 [Read more](packages/cli/README.md)
 
+## Development
+
+Install dependencies with `npm ci`. Run `npm run lint` to check code with Oxlint, `npm run format` to apply Oxfmt formatting, and `npm run format:check` to verify formatting without changing files. Use `npm test` and `npm run build` to validate changes.
+
 ## License
 
 This project is licensed under the MIT License.

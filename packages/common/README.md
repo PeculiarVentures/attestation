@@ -8,7 +8,7 @@ A common module providing tools and interfaces for verifying HSM attestation fil
 > Import `@abraham/reflection` (or another compatible polyfill) once at application startup before any attestation-related code.
 >
 > ```ts
-> import '@abraham/reflection';
+> import "@abraham/reflection";
 > ```
 
 To install the library, use npm:
@@ -23,12 +23,7 @@ This example demonstrates how to use the common attestation interfaces and types
 
 ```typescript
 import { X509Certificate, PublicKey } from "@peculiar/x509";
-import {
-  Attestation,
-  AttestationVerificationParams,
-  AttestationVerificationResult,
-  AttestationProvider,
-} from "@peculiar/attestation-common";
+import { Attestation, AttestationVerificationParams, AttestationVerificationResult, AttestationProvider } from "@peculiar/attestation-common";
 
 // Example implementation of an AttestationProvider
 class ExampleAttestationProvider implements AttestationProvider {
@@ -38,16 +33,12 @@ class ExampleAttestationProvider implements AttestationProvider {
     // Implement the logic to read attestation data
     return {
       format: this.format,
-      publicKey: new PublicKey(/* public key data */),
-      metadata: {
-        /* metadata */
-      },
+      publicKey: new PublicKey /* public key data */(),
+      metadata: {/* metadata */},
     };
   }
 
-  async verify(
-    params: AttestationVerificationParams
-  ): Promise<AttestationVerificationResult> {
+  async verify(params: AttestationVerificationParams): Promise<AttestationVerificationResult> {
     // Implement the logic to verify attestation data
     return {
       status: true,
@@ -61,9 +52,7 @@ class ExampleAttestationProvider implements AttestationProvider {
 const provider = new ExampleAttestationProvider();
 
 // Example attestation data and certificate chain data
-const attestationData = new Uint8Array([
-  /* attestation data bytes */
-]);
+const attestationData = new Uint8Array([/* attestation data bytes */]);
 const certChainPem = `-----BEGIN CERTIFICATE-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7V1...
 -----END CERTIFICATE-----

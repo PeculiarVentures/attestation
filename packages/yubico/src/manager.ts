@@ -1,5 +1,5 @@
-import * as graphene from 'graphene-pk11';
-import * as x509 from '@peculiar/x509';
+import * as graphene from "graphene-pk11";
+import * as x509 from "@peculiar/x509";
 export interface PivTokenAttestation {
   certificate: x509.X509Certificate;
   id: string;
@@ -19,7 +19,7 @@ export class PivTokenManager {
   private slots: graphene.SlotCollection;
 
   constructor(tokenPath: string) {
-    this.module = graphene.Module.load(tokenPath, 'Yubico PIV');
+    this.module = graphene.Module.load(tokenPath, "Yubico PIV");
     this.module.initialize();
     this.slots = this.module.getSlots(true);
   }
@@ -64,10 +64,10 @@ export class PivTokenManager {
           const cert = new x509.X509Certificate(certObj.value as BufferSource);
           availableAttestations.push({
             certificate: cert,
-            id: certObj.id.toString('hex'),
+            id: certObj.id.toString("hex"),
             label: certObj.label,
           });
-        } else if (certObj.label === 'X.509 Certificate for PIV Attestation') {
+        } else if (certObj.label === "X.509 Certificate for PIV Attestation") {
           caCertificate = new x509.X509Certificate(certObj.value as BufferSource);
         }
       }

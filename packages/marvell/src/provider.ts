@@ -1,23 +1,14 @@
-import {
-  AttestationProvider,
-  Attestation,
-  AttestationVerificationParams,
-  AttestationVerificationResult,
-} from '@peculiar/attestation-common';
-import { MarvellAttestation } from './attestation';
-import { MarvellAttestationParser } from './parser';
-import { PublicKeyExtractor } from './public_key';
-import {
-  MarvellAttestationValidator,
-  MarvellAttestationValidatorParams,
-} from './validator';
+import { AttestationProvider, Attestation, AttestationVerificationParams, AttestationVerificationResult } from "@peculiar/attestation-common";
+import { MarvellAttestation } from "./attestation";
+import { MarvellAttestationParser } from "./parser";
+import { PublicKeyExtractor } from "./public_key";
+import { MarvellAttestationValidator, MarvellAttestationValidatorParams } from "./validator";
 
 export type MarvellAttestationType = Attestation<MarvellAttestation>;
-export type MarvellAttestationProviderParams =
-  MarvellAttestationValidatorParams;
+export type MarvellAttestationProviderParams = MarvellAttestationValidatorParams;
 
 export class MarvellAttestationProvider implements AttestationProvider {
-  format = 'marvell';
+  format = "marvell";
 
   private publicKeyExtractor: PublicKeyExtractor;
   private validator: MarvellAttestationValidator;
@@ -39,21 +30,16 @@ export class MarvellAttestationProvider implements AttestationProvider {
     };
   }
 
-  async verify(
-    params: AttestationVerificationParams,
-  ): Promise<AttestationVerificationResult> {
+  async verify(params: AttestationVerificationParams): Promise<AttestationVerificationResult> {
     if (params.attestation.format !== this.format) {
       return {
         status: false,
-        error: new Error('Invalid attestation format'),
+        error: new Error("Invalid attestation format"),
       };
     }
 
     const { attestation, intermediateCerts } = params;
-    const result = await this.validator.validate(
-      attestation.metadata as MarvellAttestation,
-      intermediateCerts,
-    );
+    const result = await this.validator.validate(attestation.metadata as MarvellAttestation, intermediateCerts);
 
     return result;
   }
