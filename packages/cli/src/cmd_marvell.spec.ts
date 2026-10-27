@@ -70,6 +70,8 @@ describe("Marvell CLI verification", () => {
     expect(result.error).toBeUndefined();
     expect(result.status, result.stderr).toBe(0);
     expect(result.stdout).toMatch(/Status: PASSED/);
+    expect(result.stdout).toMatch(/Signature: PASSED/);
+    expect(result.stdout).toMatch(/Certificate trust: PASSED/);
   });
 
   it("still rejects a corrupted evidence signature", () => {
@@ -78,6 +80,8 @@ describe("Marvell CLI verification", () => {
     expect(result.status).toBe(1);
     expect(result.stderr).toMatch(/Status: FAILED/);
     expect(result.stderr).toMatch(/Failed to verify the attestation signature/);
+    expect(result.stdout).toMatch(/Signature: FAILED \(invalid-signature\)/);
+    expect(result.stdout).toMatch(/Certificate trust: PASSED/);
   });
 
   it.each(["missing-owner-card.pem", "missing-owner-partition.pem"])("enforces the Google profile for %s", (bundle) => {
@@ -85,6 +89,8 @@ describe("Marvell CLI verification", () => {
     expect(result.error).toBeUndefined();
     expect(result.status).toBe(1);
     expect(result.stderr).toMatch(/Google Cloud HSM card\/partition certificate relationships/);
+    expect(result.stdout).toMatch(/Signature: PASSED/);
+    expect(result.stdout).toMatch(/Certificate trust: FAILED \(untrusted-certificates\)/);
   });
 });
 
@@ -96,6 +102,8 @@ describe("Marvell CLI without an extractable public key", () => {
     expect(result.stdout).toMatch(/Attested public key: unavailable \(Unsupported key type\)/);
     expect(result.stderr).toMatch(/Status: FAILED/);
     expect(result.stderr).toMatch(/Failed to verify the attestation signature/);
+    expect(result.stdout).toMatch(/Signature: FAILED \(invalid-signature\)/);
+    expect(result.stdout).toMatch(/Certificate trust: PASSED/);
   });
 
   it("shows parsed attributes and an extraction diagnostic with info", () => {

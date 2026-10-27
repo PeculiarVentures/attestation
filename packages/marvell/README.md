@@ -103,6 +103,89 @@ whether the attested key can be extracted. It does not itself match that key or 
 attributes against an expected external key or resource. This change does not extend
 key algorithm support or add full validation of attested key material.
 
+## Signature and certificate-trust results
+
+Both `verify()` and `verifyEvidence()` return `MarvellAttestationVerificationResult`,
+a compatible extension of the shared result. Inspect `signature` and `trust` directly;
+neither the presence of a certificate nor a successful key extraction establishes trust.
+
+```typescript
+const result = await provider.verifyEvidence({ evidence, intermediateCerts: certs });
+console.log(result.signature.status, result.trust.status);
+if (result.signature.status !== "passed") {
+  console.log(result.signature.reason, result.signature.error.message);
+}
+if (result.trust.status !== "passed") {
+  console.log(result.trust.reason, result.trust.error.message);
+}
+if (result.status) {
+  // Both checks passed for the same signing-key group.
+  console.log(result.signer.subject);
+}
+```
+
+Each check has one of these states:
+
+| State           | Meaning                                                                                |
+| --------------- | -------------------------------------------------------------------------------------- |
+| `passed`        | The signature verified, or the configured certificate policy was proven, respectively  |
+| `failed`        | The check conclusively rejected its relevant candidates; includes `reason` and `error` |
+| `not-evaluated` | The check could not establish a conclusive result; includes `reason` and `error`       |
+
+For example, a valid signature with no trusted path gives signature `passed`, trust
+`failed`, overall `status: false`. A corrupted signature with a complete certificate
+proof gives signature `failed`, trust `passed`, overall `status: false`. Trust alone
+does not authenticate the evidence. Overall success requires both checks to pass for
+the same key and preserves the existing root-to-signer `chain` order.
+
+Signature mismatch means that the relevant supplied, compatible signing keys were
+actually checked and rejected. A missing signer is not a mismatch. Known non-RSA keys
+cannot sign the fixed RSA evidence format; they yield unsupported-algorithm diagnostics
+when no compatible signing key is available. Multiple mismatch-only key groups remain
+a conclusive failure; a mixture of plausible RSA mismatches and uncheckable candidates
+is inconclusive. Same-key certificates and DER duplicates do not themselves establish
+another signer identity.
+
+The relevant key set is chosen without combining independent proofs from different
+keys. If any signature verifies, only signature-passing key groups determine trust.
+Otherwise, proven policy-approved groups determine the signature result when available;
+an incomplete search retains uncertain candidates. This prevents a valid, untrusted
+key from borrowing another key's trusted certificate proof. Generic validation keeps
+its existing RSA-PSS export behavior; the Google profile retains its stricter SPKI
+algorithm restrictions.
+
+Non-passing checks use these exported `MarvellVerificationReason` values:
+
+| Reason                        | Meaning                                                                      |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| `invalid-signature`           | Relevant eligible keys conclusively rejected the signature                   |
+| `untrusted-certificates`      | No required certificate proof exists for the relevant candidates             |
+| `missing-signer`              | No candidate signing key was supplied, including anchor-only pools           |
+| `ambiguous-signer`            | Plausible candidate keys have inconclusive or mixed verification outcomes    |
+| `malformed-evidence`          | Raw evidence could not be parsed or parsed cryptographic buffers are invalid |
+| `unsupported-algorithm`       | The signing key or configured cryptographic operation is unsupported         |
+| `invalid-trust-configuration` | The per-call trust configuration was rejected                                |
+| `resource-limit`              | Input bounds or certificate-search limits prevented evaluation               |
+| `verification-error`          | A cryptographic operation or certificate check could not complete            |
+| `invalid-format`              | Legacy `verify()` received another attestation format                        |
+
+Limits and runtime errors are not definitive trust rejection. A signature already
+verified remains `passed` when its certificate search reaches a limit; the original
+x509 limit error remains available. Diagnostic searches reuse the same request budget
+and run after acceptance searches, so they cannot consume a successful search's budget.
+
+Failed results omit the legacy `signer` and `chain`. When one relevant key group is
+identified, optional `candidate.certificates` provides its DER-distinct certificates.
+A `candidate.chain`, if present, is a policy-proven path for that candidate, even if its
+evidence signature failed. These diagnostics confer no signature validity or overall
+acceptance; they are omitted when no unique relevant key group can be identified.
+The top-level `error` remains available, with existing messages retained where applicable.
+
+The shared result type and Yubico behavior are unchanged. Call through the concrete
+Marvell provider to access the additional typed checks. Trust means the selected
+profile's certificate-signature policy; the PKIX, freshness and expected-key exclusions
+described below still apply.
+
 ## Trusted certificates
 
 `verify({ trustedCerts })` replaces the constructor's trust anchors for that call only.
@@ -234,8 +317,8 @@ Evidence parsing and decompression are outside these certificate-search limits.
 The generic path builder checks certificate signatures and explicit anchor membership.
 The Google-specific card/partition guarantees belong to the explicit Google profile;
 full PKIX validation remains outside both profiles.
-A failed verification can omit `signer` and `chain`, including when no signing key
-verifies the evidence signature.
+A failed verification omits the legacy `signer` and `chain`; use the explicit checks
+and optional candidate diagnostics described above.
 
 ## Links
 

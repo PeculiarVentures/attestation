@@ -2,6 +2,7 @@ import fs from "node:fs";
 import * as x509 from "@peculiar/x509";
 import {
   type MarvellAttestation,
+  type MarvellVerificationCheck,
   type ResponseHeader,
   type MarvellAttestationData,
   type ObjectAttributes,
@@ -87,6 +88,11 @@ async function printAttestedPublicKey(provider: MarvellAttestationProvider, evid
   }
 }
 
+function printVerificationCheck(label: string, check: MarvellVerificationCheck) {
+  const state = check.status === "not-evaluated" ? "NOT EVALUATED" : check.status.toUpperCase();
+  console.log(`${TAB}${label}: ${state}${check.status === "passed" ? "" : ` (${check.reason})`}`);
+}
+
 async function detailAttestation(file: string) {
   if (!fs.existsSync(file)) {
     console.error(`File not found: ${file}`);
@@ -158,6 +164,8 @@ marvellCommand
     }
 
     console.log("Attestation verification:");
+    printVerificationCheck("Signature", result.signature);
+    printVerificationCheck("Certificate trust", result.trust);
     if (result.status) {
       console.log(`${TAB}Status: PASSED`);
     } else {

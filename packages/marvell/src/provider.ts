@@ -1,6 +1,8 @@
-import { type AttestationProvider, type Attestation, type AttestationVerificationParams, type AttestationVerificationResult } from "@peculiar/attestation-common";
+import { type AttestationProvider, type Attestation, type AttestationVerificationParams } from "@peculiar/attestation-common";
 import { type PublicKey, type X509Certificate } from "@peculiar/x509";
 import { BufferSourceConverter } from "pvtsutils";
+import { CertificateLimitError } from "./certificates";
+import { type MarvellAttestationVerificationResult, type MarvellVerificationReason, unverified } from "./verification";
 import { GoogleCloudHsmAttestationValidator, type GoogleCloudHsmTrust } from "./google_cloud_hsm";
 import { type MarvellAttestation } from "./attestation";
 import { MarvellAttestationParser } from "./parser";
@@ -58,12 +60,9 @@ export class MarvellAttestationProvider implements AttestationProvider {
     };
   }
 
-  async verify(params: MarvellAttestationVerificationParams): Promise<AttestationVerificationResult> {
+  async verify(params: MarvellAttestationVerificationParams): Promise<MarvellAttestationVerificationResult> {
     if (params.attestation.format !== this.format) {
-      return {
-        status: false,
-        error: new Error("Invalid attestation format"),
-      };
+      return unverified("invalid-format", new Error("Invalid attestation format"));
     }
 
     return this.verifyEvidence({
@@ -74,16 +73,19 @@ export class MarvellAttestationProvider implements AttestationProvider {
   }
 
   /** Verifies evidence signatures and the configured certificate policy without extracting the attested key. */
-  async verifyEvidence(params: MarvellEvidenceVerificationParams): Promise<AttestationVerificationResult> {
+  async verifyEvidence(params: MarvellEvidenceVerificationParams): Promise<MarvellAttestationVerificationResult> {
+    let stage: MarvellVerificationReason = "invalid-trust-configuration";
     try {
       const { evidence, intermediateCerts, trustedCerts } = params;
       // An explicit trust set replaces defaults for this call without changing shared provider state.
       const validator = trustedCerts === undefined ? this.validator : this.createValidator(trustedCerts);
+      stage = "malformed-evidence";
       const parsed = BufferSourceConverter.isBufferSource(evidence) ? this.parse(evidence as BufferSource) : (evidence as MarvellAttestation);
+      stage = "verification-error";
       return await validator.validate(parsed, intermediateCerts);
     } catch (error) {
       // Parsing and invalid per-call trust configuration follow the verification-result contract too.
-      return { status: false, error: error instanceof Error ? error : new Error(String(error)) };
+      return unverified(error instanceof CertificateLimitError ? "resource-limit" : stage, error);
     }
   }
 
