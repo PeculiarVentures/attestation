@@ -4,13 +4,6 @@ import { type MarvellAttestation } from "./attestation";
 import { MarvellAttestationParser } from "./parser";
 import { MANUFACTURER_ROOT_CERT, OWNER_ROOT_CERT } from "./certs";
 import { CertificateLimitError, certificateId, prepareCertificates } from "./certificates";
-
-/** Explicit roles for the two independent authorities required by the Google Cloud HSM profile. */
-export interface GoogleCloudHsmTrust {
-  manufacturerRoot: x509.X509Certificate;
-  ownerRoot: x509.X509Certificate;
-}
-
 import {
   type MarvellAttestationVerificationResult,
   type MarvellVerificationCheck,
@@ -24,6 +17,12 @@ import {
   verificationFailure,
   verified,
 } from "./verification";
+
+/** Explicit roles for the two independent authorities required by the Google Cloud HSM profile. */
+export interface GoogleCloudHsmTrust {
+  manufacturerRoot: x509.X509Certificate;
+  ownerRoot: x509.X509Certificate;
+}
 
 interface GoogleCloudHsmValidatorParams {
   crypto?: Crypto;

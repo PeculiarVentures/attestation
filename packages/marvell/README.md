@@ -173,6 +173,17 @@ Limits and runtime errors are not definitive trust rejection. A signature alread
 verified remains `passed` when its certificate search reaches a limit; the original
 x509 limit error remains available. Diagnostic searches reuse the same request budget
 and run after acceptance searches, so they cannot consume a successful search's budget.
+A generic candidate's incomplete chain search no longer aborts all other signing-key
+groups: later groups can still supply a valid signature and complete proof within the
+same shared 128-attempt budget.
+
+Google profile diagnostics are deliberately conservative across the certificate bundle.
+If an attempted certificate edge throws, every group without a proven complete policy
+receives `not-evaluated`, even when the exception came from an unrelated candidate.
+The reason is `verification-error`, or `unsupported-algorithm` when reported by Crypto.
+Its top-level error can therefore be that exception instead of the usual card/partition
+message. An ordinary false certificate-signature result does
+not trigger this behavior, and a complete same-key proof still permits acceptance.
 
 Failed results omit the legacy `signer` and `chain`. When one relevant key group is
 identified, optional `candidate.certificates` provides its DER-distinct certificates.
