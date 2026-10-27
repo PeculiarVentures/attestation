@@ -24,7 +24,6 @@
     "@abraham/reflection": "^0.13.0",
     "@arethetypeswrong/core": "^0.18.5",
     "@types/node": "^25.9.9",
-    "@types/pako": "^2.0.4",
     "@vitest/coverage-v8": "^5.0.5",
     "oxfmt": "^0.75.0",
     "oxlint": "^1.90.0",
