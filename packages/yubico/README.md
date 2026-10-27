@@ -51,7 +51,6 @@ const attest = await provider.read(attestation.certificate.rawData);
 // Verify the attestation using the CA certificate from the slot
 const result = await provider.verify({
   attestation: attest,
-  trustedCerts: [provider.getDefaultRootCert()],
   intermediateCerts: [slot.caCertificate],
 });
 
@@ -60,6 +59,41 @@ console.log(result);
 // Close the token manager
 tokenManager.close();
 ```
+
+## Trusted certificates
+
+When `trustedCerts` is omitted, the provider trusts both the legacy Yubico PIV Root CA Serial 263751 and Yubico Attestation Root 1, used by firmware 5.7.4 and later.
+The roots and the required production PIV intermediate CA certificates are bundled with the package, so verification works offline. Supply the device's attestation CA certificate from slot `f9` through `intermediateCerts`, as shown above.
+Bundled intermediate certificates are used only to build chains; they are never implicitly trusted. Issuers are selected using certificate relationships and signature verification, without firmware detection.
+
+The bundled certificates come from Yubico's official [PIV attestation documentation](https://developers.yubico.com/PIV/Introduction/PIV_attestation.html):
+
+- [Legacy PIV root](https://developers.yubico.com/PKI/yubico-piv-ca-1.pem)
+- [Attestation Root 1](https://developers.yubico.com/PKI/yubico-ca-1.pem)
+- [Intermediate CA bundle](https://developers.yubico.com/PKI/yubico-intermediate.pem) (Attestation Intermediate A 1 / B 1 and PIV Attestation A 1 / B 1 / B2 1)
+
+Use `getDefaultRootCerts(): X509Certificate[]` to retrieve all built-in trusted roots. To extend the default trust store with custom roots:
+
+```typescript
+const result = await provider.verify({
+  attestation: attest,
+  intermediateCerts: [slot.caCertificate],
+  trustedCerts: [...provider.getDefaultRootCerts(), ...customRootCerts],
+});
+```
+
+Providing `trustedCerts` replaces the default trust store entirely. To trust only your own roots:
+
+```typescript
+const result = await provider.verify({
+  attestation: attest,
+  intermediateCerts: [slot.caCertificate],
+  trustedCerts: customRootCerts,
+});
+```
+
+An empty `trustedCerts: []` trusts no certificates. `getDefaultRootCert()` remains available and returns only the legacy root; it is deprecated in favor of `getDefaultRootCerts()`.
+Explicitly trusted certificates can also be non-self-signed trust anchors, such as a pinned device certificate from slot `f9`. The returned verified chain ends at the first trusted certificate.
 
 ## License
 
