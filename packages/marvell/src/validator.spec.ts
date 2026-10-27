@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import * as zlib from "node:zlib";
 import * as x509 from "@peculiar/x509";
 import { MarvellAttestationValidator } from "./validator";
