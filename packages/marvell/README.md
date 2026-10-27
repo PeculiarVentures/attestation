@@ -75,15 +75,6 @@ checks do not add full PKIX validation or the Google-specific card/partition pol
 A failed verification can omit `signer` and `chain`, including when no signing key
 verifies the evidence signature.
 
-### Development with the unreleased x509 API
-
-This change requires `buildToAnchor()` from
-[PeculiarVentures/x509#167](https://github.com/PeculiarVentures/x509/pull/167).
-Until that API is published, use a built local checkout of x509 for development.
-Package manifests and the lockfile are intentionally unchanged; a clean installation
-of the currently published dependency does not provide this API yet. Publishing this
-package requires a follow-up dependency update to a release containing it.
-
 ## Links
 
 - [Google Cloud KMS Attestation](https://cloud.google.com/kms/docs/attest-key)
