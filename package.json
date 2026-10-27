@@ -23,6 +23,7 @@
   "devDependencies": {
     "@abraham/reflection": "^0.13.0",
     "@arethetypeswrong/core": "^0.18.5",
+    "@peculiar/webcrypto": "^2.0.0",
     "@types/node": "^25.9.9",
     "@vitest/coverage-v8": "^5.0.5",
     "oxfmt": "^0.75.0",

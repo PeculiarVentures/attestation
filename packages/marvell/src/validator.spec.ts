@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as zlib from "node:zlib";
 import * as x509 from "@peculiar/x509";
+import { Crypto as PeculiarCrypto } from "@peculiar/webcrypto";
 import { MarvellAttestationValidator } from "./validator";
 import { OWNER_ROOT_CERT } from "./certs";
 
@@ -109,6 +110,20 @@ describe("Marvell:Validator", () => {
     expect(result.status).toBe(true);
     expect(result.signer?.subjectName.getField("CN")[0]).toBe("HSM:5.3G1953-ICM001225:PARTN:1, for FIPS mode");
     expect(result.chain).toHaveLength(3);
+  });
+
+  it("validates attestations using @peculiar/webcrypto", async () => {
+    const validator = new MarvellAttestationValidator({ crypto: new PeculiarCrypto() as unknown as Crypto });
+    const data = Buffer.from(base64CompressedData, "base64");
+    const certs = x509.PemConverter.decode(certChain).map((cert) => new x509.X509Certificate(cert));
+
+    const result = await validator.validate(data, certs);
+    expect(result.status).toBe(true);
+    expect(result.chain).toHaveLength(3);
+
+    const corrupted = zlib.gunzipSync(data);
+    corrupted[corrupted.length - 1] ^= 0xff;
+    expect((await validator.validate(corrupted, certs)).status).toBe(false);
   });
 
   it("should fail validation with corrupted signature", async () => {
