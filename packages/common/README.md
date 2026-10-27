@@ -81,9 +81,12 @@ console.log(result);
 `intermediateCerts` supplies untrusted certificates for path construction.
 `trustedCerts`, when supplied, replaces the provider's default trust configuration for
 that verification call. Omission or `undefined` keeps the defaults; an explicit empty
-array does not fall back to them. Provider-specific rules still apply: Marvell requires
+array does not fall back to them. Provider-specific rules still apply: generic Marvell requires
 paths to every configured root and at least two anchors, while Yubico accepts a path
 to any configured anchor and treats an empty set as trusting no certificates.
+The concrete Marvell provider additionally supports a Google Cloud HSM profile with
+named manufacturer/owner anchors through its format-specific verification parameters.
+That profile explicitly rejects flat trust arrays; the shared interface stays unchanged.
 
 ## License
 
