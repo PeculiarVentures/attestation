@@ -1,0 +1,34 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "include-component-in-tag": false,
+      "pull-request-title-pattern": "chore(release): v${version}",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "packages/*/package.json",
+          "glob": true,
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "packages/*/package.json",
+          "glob": true,
+          "jsonpath": "$[dependencies,peerDependencies,devDependencies][?(@property.startsWith('@peculiar/attestation-'))]"
+        },
+        {
+          "type": "json",
+          "path": "package-lock.json",
+          "jsonpath": "$.packages[?(@property.startsWith('packages/'))].version"
+        },
+        {
+          "type": "json",
+          "path": "package-lock.json",
+          "jsonpath": "$.packages[?(@property.startsWith('packages/'))][dependencies,peerDependencies,devDependencies][?(@property.startsWith('@peculiar/attestation-'))]"
+        }
+      ]
+    }
+  }
+}
