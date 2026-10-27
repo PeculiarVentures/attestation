@@ -12,7 +12,9 @@
     "types": ["node"],
     "paths": {
       "@peculiar/attestation-*": ["./packages/*/src"]
-    }
+    },
+    "isolatedDeclarations": true,
+    "declaration": true
   },
   "include": ["packages/*/src"]
 }

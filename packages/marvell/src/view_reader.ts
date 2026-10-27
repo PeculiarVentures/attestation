@@ -15,11 +15,11 @@ export class DataViewReader {
     return value;
   }
 
-  setPosition(position: number) {
+  setPosition(position: number): void {
     this.position = position;
   }
 
-  getPosition() {
+  getPosition(): number {
     return this.position;
   }
 

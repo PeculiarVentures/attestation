@@ -2,7 +2,7 @@ import { PublicKey, X509Certificate } from "@peculiar/x509";
 
 export const TAB = "  ";
 
-export async function printPublicKey(publicKey: PublicKey, tab = "") {
+export async function printPublicKey(publicKey: PublicKey, tab = ""): Promise<void> {
   console.log(`${tab}Public Key:`);
   let alg = "unknown";
   switch (publicKey.algorithm.name) {
@@ -53,7 +53,7 @@ async function printCommonCertificateDetails(cert: X509Certificate, tab: string)
  * @param label - The label for the certificate.
  * @param tab - The tab string for indentation.
  */
-export async function printCertificateShort(cert: X509Certificate, label = "Certificate", tab = "") {
+export async function printCertificateShort(cert: X509Certificate, label = "Certificate", tab = ""): Promise<void> {
   if (label) {
     console.log(`${tab}${label}:`);
   }
@@ -72,7 +72,7 @@ export async function printCertificateShort(cert: X509Certificate, label = "Cert
  * @param label - The label for the certificate.
  * @param tab - The tab string for indentation.
  */
-export async function printCertificate(cert: X509Certificate, label = "Certificate", tab = "") {
+export async function printCertificate(cert: X509Certificate, label = "Certificate", tab = ""): Promise<void> {
   const details = cert.toString("text").split("\n");
 
   if (!label) {

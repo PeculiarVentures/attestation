@@ -24,6 +24,7 @@ export default defineConfig([
     entry: { main: "src/main.ts" },
     format: ["esm"],
     platform: "node",
+    dts: false,
     clean: true,
     fixedExtension: false,
     deps: { neverBundle: true },

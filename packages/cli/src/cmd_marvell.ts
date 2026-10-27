@@ -14,7 +14,7 @@ import {
 import { program } from "./program";
 import { printCertificate, printCertificateShort, printPublicKey, TAB } from "./common";
 
-export function printAttestation(attestation: MarvellAttestation, tab = "") {
+export function printAttestation(attestation: MarvellAttestation, tab = ""): void {
   console.log(`${tab}Key Attestation:`);
   console.log(`${tab}${TAB}Compressed: ${attestation.compressed}`);
   printResponseHeader(attestation.responseHeader, tab + TAB);

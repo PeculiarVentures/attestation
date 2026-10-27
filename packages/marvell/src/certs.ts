@@ -24,7 +24,7 @@ const OWNER_ROOT_CERT_PEM = [
   "/A==",
   "-----END CERTIFICATE-----",
 ].join("\n");
-export const OWNER_ROOT_CERT = new x509.X509Certificate(OWNER_ROOT_CERT_PEM);
+export const OWNER_ROOT_CERT: x509.X509Certificate = new x509.X509Certificate(OWNER_ROOT_CERT_PEM);
 
 const MANUFACTURER_ROOT_CERT_PEM = [
   "-----BEGIN CERTIFICATE-----",
@@ -50,4 +50,4 @@ const MANUFACTURER_ROOT_CERT_PEM = [
   "pLFFinSrEL1fkQR0YZQrJckktPs=",
   "-----END CERTIFICATE-----",
 ].join("\n");
-export const MANUFACTURER_ROOT_CERT = new x509.X509Certificate(MANUFACTURER_ROOT_CERT_PEM);
+export const MANUFACTURER_ROOT_CERT: x509.X509Certificate = new x509.X509Certificate(MANUFACTURER_ROOT_CERT_PEM);
