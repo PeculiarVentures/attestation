@@ -45,6 +45,17 @@ bundled manufacturer and owner trust anchors; the certificate bundle does not re
 or extend that trust configuration. A missing owner component now fails verification.
 The generic Marvell profile remains available through the library API.
 
+`marvell info` parses and displays evidence even when its attested public key cannot be
+extracted. It reports `Attested public key: unavailable (...)` separately; `info` does
+not verify authenticity. `marvell verify` also treats key display as optional, so an
+extraction/display error does not change the signature and certificate verification
+result or its exit code. A valid evidence signature can therefore be accepted even if
+the attested key is symmetric or unsupported for extraction. Invalid signatures and
+certificate relationships still fail verification.
+
+`marvell key` remains strict: it requires an extractable public key and fails on an
+extraction error. No public-key output is written when extraction fails.
+
 ## License
 
 This project is licensed under the MIT License.

@@ -88,6 +88,12 @@ The concrete Marvell provider additionally supports a Google Cloud HSM profile w
 named manufacturer/owner anchors through its format-specific verification parameters.
 That profile explicitly rejects flat trust arrays; the shared interface stays unchanged.
 
+The shared `AttestationProvider.read()` contract still returns an attestation with a
+required `publicKey`. The concrete Marvell provider additionally exposes `parse()`,
+`verifyEvidence()` and `extractPublicKey()` so that parsing and verification need not
+extract the attested key. Use that format-specific evidence API for symmetric or
+unsupported attested keys; existing `read()` and `verify()` callers remain compatible.
+
 ## License
 
 This project is licensed under the MIT License.
