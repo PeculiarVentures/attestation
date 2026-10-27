@@ -15,7 +15,7 @@ Use the GitHub organization `PeculiarVentures`, repository `attestation`, workfl
 
 If npm does not yet contain a newly added package, publish its first version with a maintainer account before configuring its trusted publisher. Existing packages can be configured in their npm package settings. See the [npm Trusted Publisher documentation](https://docs.npmjs.com/trusted-publishers/) for setup and activation requirements.
 
-Optionally configure a `RELEASE_TOKEN` GitHub App token or fine-grained PAT that can create release PRs and releases. A PR created using the default `GITHUB_TOKEN` does not trigger other workflows; without `RELEASE_TOKEN`, run CI on the release PR manually before merging. This token is for GitHub operations only.
+Optionally configure a `RELEASE_TOKEN` GitHub App token or fine-grained PAT that can create release PRs and releases. When the default `GITHUB_TOKEN` creates or updates a release PR, its CI runs require approval: a user with write access must select **Approve workflows to run** on the PR. A GitHub App or PAT can trigger CI without that approval prompt. This token is for GitHub operations only.
 
 ## Normal release
 
