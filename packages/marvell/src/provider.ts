@@ -11,11 +11,16 @@ export class MarvellAttestationProvider implements AttestationProvider {
   format = "marvell";
 
   private publicKeyExtractor: PublicKeyExtractor;
-  private validator: MarvellAttestationValidator;
+  private readonly crypto: Crypto;
+  private readonly validator: MarvellAttestationValidator;
 
   constructor(params: MarvellAttestationProviderParams = {}) {
     this.publicKeyExtractor = new PublicKeyExtractor();
-    this.validator = new MarvellAttestationValidator(params);
+    this.crypto = params.crypto ?? crypto;
+    this.validator = new MarvellAttestationValidator({
+      crypto: this.crypto,
+      trustedCerts: params.trustedCerts === undefined ? undefined : [...params.trustedCerts],
+    });
   }
 
   async read(data: BufferSource): Promise<MarvellAttestationType> {
@@ -38,9 +43,14 @@ export class MarvellAttestationProvider implements AttestationProvider {
       };
     }
 
-    const { attestation, intermediateCerts } = params;
-    const result = await this.validator.validate(attestation.metadata as MarvellAttestation, intermediateCerts);
-
-    return result;
+    try {
+      const { attestation, intermediateCerts, trustedCerts } = params;
+      // An explicit trust set replaces defaults for this call without changing shared provider state.
+      const validator = trustedCerts === undefined ? this.validator : new MarvellAttestationValidator({ crypto: this.crypto, trustedCerts: [...trustedCerts] });
+      return await validator.validate(attestation.metadata as MarvellAttestation, intermediateCerts);
+    } catch (error) {
+      // Invalid per-call trust configuration follows the verification-result contract too.
+      return { status: false, error: error instanceof Error ? error : new Error(String(error)) };
+    }
   }
 }

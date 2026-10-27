@@ -76,6 +76,15 @@ const result = await provider.verify({
 console.log(result);
 ```
 
+## Verification trust configuration
+
+`intermediateCerts` supplies untrusted certificates for path construction.
+`trustedCerts`, when supplied, replaces the provider's default trust configuration for
+that verification call. Omission or `undefined` keeps the defaults; an explicit empty
+array does not fall back to them. Provider-specific rules still apply: Marvell requires
+paths to every configured root and at least two anchors, while Yubico accepts a path
+to any configured anchor and treats an empty set as trusting no certificates.
+
 ## License
 
 This project is licensed under the MIT License.

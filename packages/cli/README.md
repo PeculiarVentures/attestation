@@ -31,6 +31,16 @@ For detailed information on a specific command, use the `--help` flag with the c
 attest <command> --help
 ```
 
+## Marvell verification
+
+```sh
+attest marvell verify evidence.bin --cert certificates.pem
+```
+
+`--cert` supplies the untrusted signing and intermediate certificate bundle in PEM
+format. Verification uses the bundled manufacturer and owner trust anchors; the
+certificate bundle does not replace or extend that trust configuration.
+
 ## License
 
 This project is licensed under the MIT License.

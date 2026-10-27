@@ -53,6 +53,34 @@ const result = await provider.verify({
 console.log(result);
 ```
 
+## Trusted certificates
+
+`verify({ trustedCerts })` replaces the constructor's trust anchors for that call only.
+Omitting `trustedCerts`, or passing `undefined`, uses the constructor's configuration;
+without custom constructor anchors, the bundled manufacturer and owner roots are used.
+No anchors are merged automatically, and an unsuccessful override never falls back to
+constructor or bundled roots. To combine trust configurations, explicitly supply the
+complete intended set.
+
+Marvell requires at least two configured anchors and a path to **every** anchor in the
+selected set. An explicit empty array or a one-certificate override returns
+`{ status: false, error }`; invalid constructor configuration still throws immediately.
+Yubico's trust-store policy differs: it accepts a path to any configured anchor.
+
+```typescript
+const provider = new MarvellAttestationProvider({ trustedCerts: rootsA });
+const result = await provider.verify({
+  attestation,
+  intermediateCerts: certs,
+  trustedCerts: rootsB, // Only rootsB applies to this call; rootsA remains the default.
+});
+```
+
+Trust-anchor arrays are copied when the provider is constructed or verification starts.
+Per-call overrides are isolated from concurrent and subsequent calls and preserve the
+constructor's WebCrypto provider. The CLI's `--cert` bundle supplies untrusted signing
+and intermediate certificates; it does not replace the bundled trust anchors.
+
 ## Certificate path verification
 
 The validator identifies candidate signing keys using the evidence signature, then uses
