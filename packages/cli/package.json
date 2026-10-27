@@ -2,7 +2,7 @@
   "name": "@peculiar/attestation-cli",
   "version": "2.0.0",
   "description": "A CLI utility for verifying attestation data in various formats, supporting multiple attestation providers and offering a range of commands to interact with attestation files and certificates.",
-  "homepage": "https://github.com/PeculiarVentures/attestation/tree/master/packages/cli#readme",
+  "homepage": "https://github.com/PeculiarVentures/attestation/tree/main/packages/cli#readme",
   "bugs": {
     "url": "https://github.com/PeculiarVentures/attestation/issues"
   },
@@ -43,7 +43,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/PeculiarVentures/attestation.git",
+    "url": "https://github.com/PeculiarVentures/attestation",
     "directory": "packages/cli"
   }
 }

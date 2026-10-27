@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "name": "@peculiar/attestation-yubico",
   "description": "A library providing tools to verify PIV attestation files from Yubico, including support for certificate chain validation and attestation data extraction.",
-  "homepage": "https://github.com/PeculiarVentures/attestation/tree/master/packages/yubico#readme",
+  "homepage": "https://github.com/PeculiarVentures/attestation/tree/main/packages/yubico#readme",
   "bugs": {
     "url": "https://github.com/PeculiarVentures/attestation/issues"
   },
@@ -39,7 +39,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/PeculiarVentures/attestation.git",
+    "url": "https://github.com/PeculiarVentures/attestation",
     "directory": "packages/yubico"
   },
   "exports": {
