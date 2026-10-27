@@ -13,7 +13,8 @@
     "build": "lerna run build",
     "coverage": "vitest run --coverage",
     "format": "oxfmt",
-    "format:check": "oxfmt --check"
+    "format:check": "oxfmt --check",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "tsx": "^4.21.0"

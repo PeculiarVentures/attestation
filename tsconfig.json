@@ -4,7 +4,9 @@
     "baseUrl": ".",
     "paths": {
       "@peculiar/attestation-*": ["packages/*/src"]
-    }
+    },
+    "module": "preserve",
+    "moduleResolution": "bundler"
   },
   "exclude": ["packages/*/build"]
 }

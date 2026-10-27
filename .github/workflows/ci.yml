@@ -29,6 +29,9 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
+      - name: Type check
+        run: npm run typecheck
+
       - name: Run tests with coverage
         run: npm run coverage
 
