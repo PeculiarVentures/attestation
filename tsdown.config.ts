@@ -11,6 +11,10 @@ export default defineConfig([
     unbundle: true,
     fixedExtension: false,
     deps: { neverBundle: true },
+    inputOptions: { experimental: { attachDebugInfo: "none" } },
+    outputOptions: {
+      comments: { legal: true, annotation: true, jsdoc: false },
+    },
     outDir: "build",
     tsconfig: "../../tsconfig.json",
     attw: { level: "error", profile: "esm-only" },
@@ -23,6 +27,10 @@ export default defineConfig([
     clean: true,
     fixedExtension: false,
     deps: { neverBundle: true },
+    inputOptions: { experimental: { attachDebugInfo: "none" } },
+    outputOptions: {
+      comments: { legal: true, annotation: true, jsdoc: false },
+    },
     outDir: "bin",
     tsconfig: "../../tsconfig.json",
   },
