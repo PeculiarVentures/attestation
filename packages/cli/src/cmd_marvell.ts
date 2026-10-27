@@ -1,15 +1,15 @@
 import fs from "node:fs";
 import * as x509 from "@peculiar/x509";
 import {
-  MarvellAttestation,
-  ResponseHeader,
-  MarvellAttestationData,
-  ObjectAttributes,
-  Attributes,
-  AttributeValue,
+  type MarvellAttestation,
+  type ResponseHeader,
+  type MarvellAttestationData,
+  type ObjectAttributes,
+  type Attributes,
+  type AttributeValue,
   MarvellAttestationFlags,
   MarvellAttestationProvider,
-  MarvellAttestationType,
+  type MarvellAttestationType,
 } from "@peculiar/attestation-marvell";
 import { program } from "./program";
 import { printCertificate, printCertificateShort, printPublicKey, TAB } from "./common";

@@ -1,12 +1,18 @@
 {
-  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@peculiar/attestation-*": ["packages/*/src"]
-    },
+    "target": "ES2023",
     "module": "preserve",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noImplicitOverride": true,
+    "noEmit": true,
+    "types": ["node"],
+    "paths": {
+      "@peculiar/attestation-*": ["./packages/*/src"]
+    }
   },
-  "exclude": ["packages/*/build"]
+  "include": ["packages/*/src"]
 }

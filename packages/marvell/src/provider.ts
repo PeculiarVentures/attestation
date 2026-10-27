@@ -1,8 +1,8 @@
-import { AttestationProvider, Attestation, AttestationVerificationParams, AttestationVerificationResult } from "@peculiar/attestation-common";
-import { MarvellAttestation } from "./attestation";
+import { type AttestationProvider, type Attestation, type AttestationVerificationParams, type AttestationVerificationResult } from "@peculiar/attestation-common";
+import { type MarvellAttestation } from "./attestation";
 import { MarvellAttestationParser } from "./parser";
 import { PublicKeyExtractor } from "./public_key";
-import { MarvellAttestationValidator, MarvellAttestationValidatorParams } from "./validator";
+import { MarvellAttestationValidator, type MarvellAttestationValidatorParams } from "./validator";
 
 export type MarvellAttestationType = Attestation<MarvellAttestation>;
 export type MarvellAttestationProviderParams = MarvellAttestationValidatorParams;

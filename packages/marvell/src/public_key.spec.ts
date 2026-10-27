@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PublicKeyExtractor } from "./public_key";
-import { Attributes, MarvellAttestation, MarvellAttestationFlags } from "./attestation";
+import { type Attributes, type MarvellAttestation, MarvellAttestationFlags } from "./attestation";
 
 describe("Marvell:PublicKeyExtractor", () => {
   const data = Buffer.from("test data to sign");

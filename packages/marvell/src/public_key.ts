@@ -3,7 +3,7 @@ import { SubjectPublicKeyInfo } from "@peculiar/asn1-x509";
 import { RSAPublicKey } from "@peculiar/asn1-rsa";
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { container } from "tsyringe";
-import { CryptokiKeyType, MarvellAttestation } from "./attestation";
+import { CryptokiKeyType, type MarvellAttestation } from "./attestation";
 
 /**
  * Interface representing the algorithm and key usages.
