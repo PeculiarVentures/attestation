@@ -11,7 +11,7 @@ Configure an npm Trusted Publisher for **each** package:
 - `@peculiar/attestation-yubico`
 - `@peculiar/attestation-cli`
 
-Use the GitHub organization `PeculiarVentures`, repository `attestation`, workflow filename `release.yml`, and environment `npm`. Permit direct publication with `npm publish`. The GitHub `npm` environment must allow deployments from release commits on `main` and stable `v*` tags. Add environment protection rules if your release policy requires them. Trusted publishing uses GitHub-hosted runners and needs npm >=11.5.1; the workflow runs Node 24. No npm token is used by this workflow.
+Use the GitHub organization `PeculiarVentures`, repository `attestation`, workflow filename `publish.yml`, and environment `npm`. Permit direct publication with `npm publish`. The GitHub `npm` environment must allow deployments from release commits on `main` and stable `v*` tags. Add environment protection rules if your release policy requires them. Trusted publishing uses GitHub-hosted runners and needs npm >=11.5.1; the workflow runs Node 24. No npm token is used by this workflow.
 
 If npm does not yet contain a newly added package, publish its first version with a maintainer account before configuring its trusted publisher. Existing packages can be configured in their npm package settings. See the [npm Trusted Publisher documentation](https://docs.npmjs.com/trusted-publishers/) for setup and activation requirements.
 
