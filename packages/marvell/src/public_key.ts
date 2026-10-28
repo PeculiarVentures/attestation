@@ -1,9 +1,9 @@
-import { AlgorithmProvider, diAlgorithmProvider, PublicKey } from '@peculiar/x509';
-import { SubjectPublicKeyInfo } from '@peculiar/asn1-x509';
-import { RSAPublicKey } from '@peculiar/asn1-rsa';
-import { AsnConvert } from '@peculiar/asn1-schema';
-import { container } from 'tsyringe';
-import { CryptokiKeyType, MarvellAttestation } from './attestation';
+import { AlgorithmProvider, diAlgorithmProvider, PublicKey } from "@peculiar/x509";
+import { SubjectPublicKeyInfo } from "@peculiar/asn1-x509";
+import { RSAPublicKey } from "@peculiar/asn1-rsa";
+import { AsnConvert } from "@peculiar/asn1-schema";
+import { container } from "tsyringe";
+import { CryptokiKeyType, MarvellAttestation } from "./attestation";
 
 /**
  * Interface representing the algorithm and key usages.
@@ -26,41 +26,41 @@ export class PublicKeyExtractor {
    */
   private determineAlgorithmAndKeyUsages(attestation: MarvellAttestation): AlgorithmAndKeyUsages {
     const attrs = attestation.attestationData.firstKey.attributes;
-    const keyType = CryptokiKeyType[attrs['OBJ_ATTR_KEY_TYPE']];
+    const keyType = CryptokiKeyType[attrs["OBJ_ATTR_KEY_TYPE"]];
     let algorithm: Algorithm | RsaHashedImportParams | EcKeyImportParams | undefined;
     let keyUsages: KeyUsage[];
 
     switch (keyType) {
       case CryptokiKeyType.CKK_RSA:
-        if (attrs['OBJ_ATTR_VERIFY'] || attrs['OBJ_ATTR_SIGN']) {
-          algorithm = { name: 'RSASSA-PKCS1-v1_5' };
-          keyUsages = ['verify'];
+        if (attrs["OBJ_ATTR_VERIFY"] || attrs["OBJ_ATTR_SIGN"]) {
+          algorithm = { name: "RSASSA-PKCS1-v1_5" };
+          keyUsages = ["verify"];
         } else {
-          algorithm = { name: 'RSA-OAEP' };
-          keyUsages = ['encrypt', 'wrapKey'];
+          algorithm = { name: "RSA-OAEP" };
+          keyUsages = ["encrypt", "wrapKey"];
         }
         break;
       case CryptokiKeyType.CKK_EC: {
-        const algName = attrs['OBJ_ATTR_VERIFY'] || attrs['OBJ_ATTR_SIGN'] ? 'ECDSA' : 'ECDH';
-        keyUsages = algName === 'ECDSA' ? ['verify'] : ['deriveKey', 'deriveBits'];
-        const valueLen = attrs['OBJ_ATTR_VALUE_LEN'];
+        const algName = attrs["OBJ_ATTR_VERIFY"] || attrs["OBJ_ATTR_SIGN"] ? "ECDSA" : "ECDH";
+        keyUsages = algName === "ECDSA" ? ["verify"] : ["deriveKey", "deriveBits"];
+        const valueLen = attrs["OBJ_ATTR_VALUE_LEN"];
         switch (valueLen) {
           case 65:
-            algorithm = { name: algName, namedCurve: 'P-256' };
+            algorithm = { name: algName, namedCurve: "P-256" };
             break;
           case 97:
-            algorithm = { name: algName, namedCurve: 'P-384' };
+            algorithm = { name: algName, namedCurve: "P-384" };
             break;
           case 133:
-            algorithm = { name: algName, namedCurve: 'P-521' };
+            algorithm = { name: algName, namedCurve: "P-521" };
             break;
           default:
-            throw new Error('Unsupported curve');
+            throw new Error("Unsupported curve");
         }
         break;
       }
       default:
-        throw new Error('Unsupported key type');
+        throw new Error("Unsupported key type");
     }
 
     return { algorithm, keyUsages };
@@ -74,21 +74,19 @@ export class PublicKeyExtractor {
   private attestToPkcs8(attestation: MarvellAttestation): ArrayBuffer {
     const { algorithm } = this.determineAlgorithmAndKeyUsages(attestation);
     const attributes = attestation.attestationData.firstKey.attributes;
-    const modulus = attributes['OBJ_ATTR_MODULUS'];
+    const modulus = attributes["OBJ_ATTR_MODULUS"];
 
     let subjectPublicKey = modulus as unknown as ArrayBuffer;
-    if (algorithm.name.startsWith('RSA')) {
+    if (algorithm.name.startsWith("RSA")) {
       const rsaPublicKey = new RSAPublicKey({
         modulus: subjectPublicKey,
-        publicExponent: attributes['OBJ_ATTR_PUBLIC_EXPONENT'] as unknown as ArrayBuffer,
+        publicExponent: attributes["OBJ_ATTR_PUBLIC_EXPONENT"] as unknown as ArrayBuffer,
       });
       subjectPublicKey = AsnConvert.serialize(rsaPublicKey);
     }
 
     const spki = new SubjectPublicKeyInfo({
-      algorithm: container
-        .resolve<AlgorithmProvider>(diAlgorithmProvider)
-        .toAsnAlgorithm(algorithm),
+      algorithm: container.resolve<AlgorithmProvider>(diAlgorithmProvider).toAsnAlgorithm(algorithm),
       subjectPublicKey,
     });
 

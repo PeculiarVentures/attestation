@@ -1,5 +1,5 @@
-import fs from 'node:fs';
-import * as x509 from '@peculiar/x509';
+import fs from "node:fs";
+import * as x509 from "@peculiar/x509";
 import {
   MarvellAttestation,
   ResponseHeader,
@@ -10,63 +10,46 @@ import {
   MarvellAttestationFlags,
   MarvellAttestationProvider,
   MarvellAttestationType,
-} from '@peculiar/attestation-marvell';
-import { program } from './program';
-import {
-  printCertificate,
-  printCertificateShort,
-  printPublicKey,
-  TAB,
-} from './common';
+} from "@peculiar/attestation-marvell";
+import { program } from "./program";
+import { printCertificate, printCertificateShort, printPublicKey, TAB } from "./common";
 
-export function printAttestation(attestation: MarvellAttestation, tab = '') {
+export function printAttestation(attestation: MarvellAttestation, tab = "") {
   console.log(`${tab}Key Attestation:`);
   console.log(`${tab}${TAB}Compressed: ${attestation.compressed}`);
   printResponseHeader(attestation.responseHeader, tab + TAB);
   printAttestationData(attestation.attestationData, tab + TAB);
 }
 
-function printResponseHeader(attestation: ResponseHeader, tab = '') {
+function printResponseHeader(attestation: ResponseHeader, tab = "") {
   console.log(`${tab}Response Header:`);
   console.log(`${tab}${TAB}Code: ${attestation.responseCode}`);
-  console.log(
-    `${tab}${TAB}Flags: ${stringifyAttestationFlags(attestation.requestFlags)}`,
-  );
+  console.log(`${tab}${TAB}Flags: ${stringifyAttestationFlags(attestation.requestFlags)}`);
   console.log(`${tab}${TAB}Buffer Size: ${attestation.bufferSize} bytes`);
   console.log(`${tab}${TAB}Total Size: ${attestation.totalSize} bytes`);
 }
 
-function printAttestationData(attestation: MarvellAttestationData, tab = '') {
+function printAttestationData(attestation: MarvellAttestationData, tab = "") {
   console.log(`${tab}Key Attestation Data:`);
   console.log(`${tab}${TAB}Version: v${attestation.info.objectVersion}`);
-  console.log(
-    `${tab}${TAB}Flags: ${stringifyAttestationFlags(
-      attestation.info.requestFlags,
-    )}`,
-  );
+  console.log(`${tab}${TAB}Flags: ${stringifyAttestationFlags(attestation.info.requestFlags)}`);
 
-  printObject(attestation.firstKey, 'First Key', tab + TAB);
+  printObject(attestation.firstKey, "First Key", tab + TAB);
   if (attestation.secondKey) {
-    printObject(attestation.secondKey, 'Second Key', tab + TAB);
+    printObject(attestation.secondKey, "Second Key", tab + TAB);
   }
 }
 
-function printObject(
-  data: ObjectAttributes,
-  name = 'Object Attributes',
-  tab = '',
-) {
+function printObject(data: ObjectAttributes, name = "Object Attributes", tab = "") {
   console.log(`${tab}${name}:`);
-  console.log(
-    `${tab}${TAB}Handle: 0x${data.handle.toString(16).padStart(8, '0')}`,
-  );
+  console.log(`${tab}${TAB}Handle: 0x${data.handle.toString(16).padStart(8, "0")}`);
   console.log(`${tab}${TAB}Object Size: ${data.objectSize} bytes`);
   console.log(`${tab}${TAB}Attribute Count: ${data.attributeCount}`);
 
   printAttributes(data.attributes, tab + TAB);
 }
 
-function printAttributes(attributes: Attributes, tab = '') {
+function printAttributes(attributes: Attributes, tab = "") {
   console.log(`${tab}Attributes:`);
   for (const [key, value] of Object.entries(attributes)) {
     console.log(`${tab}${TAB}${key}: ${stringifyAttributeValue(value)}`);
@@ -75,7 +58,7 @@ function printAttributes(attributes: Attributes, tab = '') {
 
 function stringifyAttributeValue(value: AttributeValue): string {
   if (value instanceof Uint8Array) {
-    return `0x${Buffer.from(value).toString('hex')}`;
+    return `0x${Buffer.from(value).toString("hex")}`;
   } else {
     return `${value}`;
   }
@@ -84,22 +67,19 @@ function stringifyAttributeValue(value: AttributeValue): string {
 function stringifyAttestationFlags(flags: MarvellAttestationFlags) {
   const values: string[] = [];
   if (flags & MarvellAttestationFlags.KEY_GEN_FLAG_GET_ATTR) {
-    values.push('KEY_GEN_FLAG_GET_ATTR');
+    values.push("KEY_GEN_FLAG_GET_ATTR");
   }
   if (flags & MarvellAttestationFlags.KEY_GEN_FLAG_GET_ATTEST) {
-    values.push('KEY_GEN_FLAG_GET_ATTEST');
+    values.push("KEY_GEN_FLAG_GET_ATTEST");
   }
   if (flags & MarvellAttestationFlags.KEY_GEN_FLAG_EXCLUDE_HEADER) {
-    values.push('KEY_GEN_FLAG_EXCLUDE_HEADER');
+    values.push("KEY_GEN_FLAG_EXCLUDE_HEADER");
   }
 
-  return values.join(' | ');
+  return values.join(" | ");
 }
 
-async function printAttestationDetails(
-  attestation: MarvellAttestationType,
-  tab = '',
-) {
+async function printAttestationDetails(attestation: MarvellAttestationType, tab = "") {
   printAttestation(attestation.metadata, tab);
   await printPublicKey(attestation.publicKey, tab);
 }
@@ -114,17 +94,15 @@ async function detailAttestation(file: string) {
   const marvellAttestation = new MarvellAttestationProvider();
   const attestation = await marvellAttestation.read(data);
 
-  await printAttestationDetails(attestation, '');
+  await printAttestationDetails(attestation, "");
 }
 
-const marvellCommand = program
-  .command('marvell')
-  .description('Marvell attestation commands');
+const marvellCommand = program.command("marvell").description("Marvell attestation commands");
 
 marvellCommand
-  .command('info')
-  .description('Detail the attestation')
-  .argument('<attestation-file>', 'The attestation file path')
+  .command("info")
+  .description("Detail the attestation")
+  .argument("<attestation-file>", "The attestation file path")
   .action(async (attestationFile: string) => {
     await detailAttestation(attestationFile);
   });
@@ -134,10 +112,10 @@ interface MarvellVerifyOptions {
 }
 
 marvellCommand
-  .command('verify')
-  .description('Verify the attestation')
-  .argument('<attestation-file>', 'The attestation file path')
-  .requiredOption('-c, --cert <file>', 'The certificate file path')
+  .command("verify")
+  .description("Verify the attestation")
+  .argument("<attestation-file>", "The attestation file path")
+  .requiredOption("-c, --cert <file>", "The certificate file path")
   .action(async (attestationFile: string, options: MarvellVerifyOptions) => {
     if (!fs.existsSync(attestationFile)) {
       console.error(`Attestation file not found: ${attestationFile}`);
@@ -169,16 +147,16 @@ marvellCommand
     console.log();
 
     if (result.chain) {
-      console.log('Signing certificate chain:');
-      let tab = '';
+      console.log("Signing certificate chain:");
+      let tab = "";
       for (const cert of result.chain) {
-        await printCertificateShort(cert, '', tab);
+        await printCertificateShort(cert, "", tab);
         console.log();
         tab += TAB;
       }
     }
 
-    console.log('Attestation verification:');
+    console.log("Attestation verification:");
     if (result.status) {
       console.log(`${TAB}Status: PASSED`);
     } else {
@@ -193,10 +171,10 @@ interface MarvellCertsOptions {
 }
 
 marvellCommand
-  .command('certs')
-  .description('Detail the certificate file')
-  .argument('<cert-file>', 'The certificate file path')
-  .option('-d, --details', 'Show detailed certificate information', false)
+  .command("certs")
+  .description("Detail the certificate file")
+  .argument("<cert-file>", "The certificate file path")
+  .option("-d, --details", "Show detailed certificate information", false)
   .action(async (certFile: string, options: MarvellCertsOptions) => {
     if (!fs.existsSync(certFile)) {
       console.error(`File not found: ${certFile}`);
@@ -224,17 +202,12 @@ interface MarvellKeyOptions {
 }
 
 marvellCommand
-  .command('key')
-  .description(
-    'Export the public key and optionally compare with a source key or save to a file',
-  )
-  .argument('<attestation-file>', 'The attestation file path')
-  .option(
-    '-k, --key <key>',
-    'The source key to compare. Can be a CSR, SPKI, or X.509 certificate file in PEM or DER format',
-  )
-  .option('-o, --output [file]', 'The output file to save the public key')
-  .option('-f, --format [format]', 'The output format (pem, der)', 'pem')
+  .command("key")
+  .description("Export the public key and optionally compare with a source key or save to a file")
+  .argument("<attestation-file>", "The attestation file path")
+  .option("-k, --key <key>", "The source key to compare. Can be a CSR, SPKI, or X.509 certificate file in PEM or DER format")
+  .option("-o, --output [file]", "The output file to save the public key")
+  .option("-f, --format [format]", "The output format (pem, der)", "pem")
   .action(async (attestationFile: string, options: MarvellKeyOptions) => {
     // Read the attestation file
     if (!fs.existsSync(attestationFile)) {
@@ -251,13 +224,13 @@ marvellCommand
     await printPublicKey(publicKey);
 
     if (options.outputFile) {
-      if (options.outputFormat === 'pem') {
-        fs.writeFileSync(options.outputFile, publicKey.toString('pem'), {
-          flag: 'w+',
+      if (options.outputFormat === "pem") {
+        fs.writeFileSync(options.outputFile, publicKey.toString("pem"), {
+          flag: "w+",
         });
-      } else if (options.outputFormat === 'der') {
+      } else if (options.outputFormat === "der") {
         fs.writeFileSync(options.outputFile, Buffer.from(publicKey.rawData), {
-          flag: 'w+',
+          flag: "w+",
         });
       } else {
         console.error(`Invalid output format: ${options.outputFormat}`);
@@ -296,10 +269,8 @@ marvellCommand
       }
       const attestationKeyId = await publicKey.getKeyIdentifier();
       console.log();
-      console.log('Matching public key identifiers:');
-      if (
-        Buffer.compare(Buffer.from(keyId), Buffer.from(attestationKeyId)) === 0
-      ) {
+      console.log("Matching public key identifiers:");
+      if (Buffer.compare(Buffer.from(keyId), Buffer.from(attestationKeyId)) === 0) {
         console.log(`${TAB}Status: PASSED`);
       } else {
         console.error(`${TAB}Status: FAILED`);

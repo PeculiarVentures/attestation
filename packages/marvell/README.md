@@ -8,7 +8,7 @@ A library providing tools to verify HSM attestation files from various HSMs that
 > Import `@abraham/reflection` (or another compatible polyfill) once at application startup before any attestation-related code.
 >
 > ```ts
-> import '@abraham/reflection';
+> import "@abraham/reflection";
 > ```
 
 To install the library, use npm:
@@ -29,9 +29,7 @@ import { x509 } from "@peculiar/x509";
 const provider = new MarvellAttestationProvider();
 
 // Example attestation data and certificate chain data
-const attestationData = new Uint8Array([
-  /* attestation data bytes */
-]);
+const attestationData = new Uint8Array([/* attestation data bytes */]);
 const certChainPem = `-----BEGIN CERTIFICATE-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7V1...
 -----END CERTIFICATE-----

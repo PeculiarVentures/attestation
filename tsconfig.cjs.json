@@ -2,9 +2,7 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "module": "CommonJS",
-    "removeComments": true,
+    "removeComments": true
   },
-  "exclude": [
-    "**/*.spec.ts",
-  ]
+  "exclude": ["**/*.spec.ts"]
 }
