@@ -94,6 +94,12 @@ required `publicKey`. The concrete Marvell provider additionally exposes `parse(
 extract the attested key. Use that format-specific evidence API for symmetric or
 unsupported attested keys; existing `read()` and `verify()` callers remain compatible.
 
+Marvell verification additionally returns format-specific `signature` and `trust`
+checks with `passed`, `failed` or `not-evaluated` states and reasons for non-passing
+checks. Its result remains assignable to the shared result type. Overall success
+requires both checks to pass for the same signing key; the shared interface and
+Yubico result are unchanged. Use the concrete Marvell provider for these typed fields.
+
 ## License
 
 This project is licensed under the MIT License.

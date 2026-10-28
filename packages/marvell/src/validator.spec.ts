@@ -257,6 +257,8 @@ describe("Marvell: generated certificate graphs", () => {
     const result = await new MarvellAttestationValidator({ trustedCerts: roots }).validate(evidence, [...intermediates, partition, bundle[2]]);
     expect(result.status).toBe(false);
     if (!result.status) expect(result.error).toMatchObject({ code: "LIMIT_EXCEEDED", limit: "maxDepth" });
+    expect(result.signature.status).toBe("passed");
+    expect(result.trust).toMatchObject({ status: "not-evaluated", reason: "resource-limit" });
   });
 
   it("bounds dense cyclic searches and preserves the x509 step-limit error", async () => {
@@ -265,6 +267,8 @@ describe("Marvell: generated certificate graphs", () => {
     const result = await new MarvellAttestationValidator({ trustedCerts: roots }).validate(evidence, [...cyclic, partition, bundle[2]]);
     expect(result.status).toBe(false);
     if (!result.status) expect(result.error).toMatchObject({ code: "LIMIT_EXCEEDED", limit: "maxSearchSteps" });
+    expect(result.signature.status).toBe("passed");
+    expect(result.trust).toMatchObject({ status: "not-evaluated", reason: "resource-limit" });
   });
 
   it.each(["maxDepth", "maxSearchSteps"] as const)("tries other signer certificates after an unrelated same-key path reaches %s", async (limit) => {
@@ -311,6 +315,8 @@ describe("Marvell: generated certificate graphs", () => {
     const result = await new MarvellAttestationValidator({ trustedCerts: manyRoots }).validate(evidence, partitions);
     expect(result.status).toBe(false);
     if (!result.status) expect(result.error.message).toMatch(/attempt limit/);
+    expect(result.signature.status).toBe("passed");
+    expect(result.trust).toMatchObject({ status: "not-evaluated", reason: "resource-limit" });
   });
 
   it("does not treat configured anchors themselves as partition signing certificates", async () => {
