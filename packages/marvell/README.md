@@ -53,6 +53,28 @@ const result = await provider.verify({
 console.log(result);
 ```
 
+## Certificate path verification
+
+The validator identifies candidate signing keys using the evidence signature, then uses
+`X509ChainBuilder.buildToAnchor()` to confirm a path to **every** configured root.
+Certificates with the same signing key may differ between paths. The returned `chain`
+remains in root-to-signer order and corresponds to the first configured root.
+Duplicate certificates and roots in the input bundle are supported; self-issued
+certificates are not discarded. The selected DER path is independent of bundle order.
+
+Validation accepts at most 64 input certificates and configured roots combined, with
+at most 1 MiB of combined DER data (including duplicates). Each path search permits
+16 certificates, including its signer and anchor, and 10,000 considered edges. A
+validation call permits at most 128 path searches across all candidates and roots.
+Resource exhaustion returns `status: false`; x509's `LIMIT_EXCEEDED` error is retained
+when no other candidate supplies the required path after a depth or step limit.
+Evidence parsing and decompression are outside these certificate-search limits.
+
+The path builder checks certificate signatures and explicit anchor membership. These
+checks do not add full PKIX validation or the Google-specific card/partition policy.
+A failed verification can omit `signer` and `chain`, including when no signing key
+verifies the evidence signature.
+
 ## Links
 
 - [Google Cloud KMS Attestation](https://cloud.google.com/kms/docs/attest-key)
