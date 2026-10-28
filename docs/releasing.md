@@ -1,6 +1,6 @@
 # Releasing
 
-The four public workspaces share one version and one `v<version>` Git tag. The root package is private and supplies the release version. `release-please` updates the root version, workspace versions, internal dependency ranges and package-lock.json in a release PR, and records release notes in the root CHANGELOG.md. Workspace CHANGELOG.md files contain historical notes; new releases use the root changelog.
+The four public workspaces share one version and one `v<version>` Git tag. The root package is private and supplies the release version. `release-please` updates the root version, workspace versions, internal dependency ranges and package-lock.json in a release PR. Release notes are generated from Conventional Commits in the release PR description and published to [GitHub Releases](https://github.com/PeculiarVentures/attestation/releases) when that PR is merged. Changelog file generation is disabled with `skip-changelog` in `release-please-config.json`.
 
 ## One-time setup
 
@@ -20,8 +20,8 @@ Optionally configure a `RELEASE_TOKEN` GitHub App token or fine-grained PAT that
 ## Normal release
 
 1. Merge reviewed changes to `main` using Conventional Commit subjects. `feat:` requests a minor release; `fix:` requests a patch. A `!` subject or `BREAKING CHANGE:` footer requests a major release, including the ESM-only migration.
-2. The Release workflow runs the reusable CI workflow before invoking release-please. Release-please creates or updates a release PR with the next shared version and changelog.
-3. Review the release PR, including all four package versions, internal dependency ranges, lockfile and changelog. Run CI on that PR. Do not manually edit generated versions independently.
+2. The Release workflow runs the reusable CI workflow before invoking release-please. Release-please creates or updates a release PR with the next shared version and release notes in its description.
+3. Review the release PR, including all four package versions, internal dependency ranges, lockfile and release notes. Run CI on that PR. Do not manually edit generated versions independently.
 4. Merge the release PR. Release-please creates its immutable `v<version>` tag and GitHub Release. The publication job verifies the release commit SHA, builds that commit and publishes using OIDC with npm provenance.
 
 Packages are published in dependency order: `common`, then `marvell` and `yubico`, then `cli`. The release script rejects mismatched versions, stale internal dependency ranges, dependency cycles and failed registry checks. Only a registry E404 is treated as an unpublished version. The `v<major>` Git tag is moved after successful publication, provided the version is the latest stable tag in that major.
