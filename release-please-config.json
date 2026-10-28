@@ -4,6 +4,7 @@
     ".": {
       "release-type": "node",
       "include-component-in-tag": false,
+      "skip-changelog": true,
       "pull-request-title-pattern": "chore(release): v${version}",
       "extra-files": [
         {
