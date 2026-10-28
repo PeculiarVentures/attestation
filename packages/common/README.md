@@ -1,4 +1,16 @@
-# @peculiar/attestation-common
+<h1 align="center">
+  @peculiar/attestation-common
+</h1>
+
+<div align="center">
+
+![NPM License](https://img.shields.io/npm/l/@peculiar/attestation-common)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/PeculiarVentures/attestation/publish.yml?branch=main&label=publish)
+[![npm version](https://img.shields.io/npm/v/@peculiar/attestation-common.svg)](https://www.npmjs.com/package/@peculiar/attestation-common)
+![Coveralls](https://img.shields.io/coverallsCoverage/github/PeculiarVentures/attestation)
+[![npm downloads](https://img.shields.io/npm/dm/@peculiar/attestation-common.svg)](https://www.npmjs.com/package/@peculiar/attestation-common)
+
+</div>
 
 A common module providing tools and interfaces for verifying HSM attestation files from various HSMs, including support for certificate chain validation and attestation data extraction.
 
@@ -17,13 +29,22 @@ To install the library, use npm:
 npm install @peculiar/attestation-common
 ```
 
+## Breaking Changes In v3
+
+v3 is ESM-only and requires Node.js `^20.19.0 || >=22.12.0` (2.x had no `engines` field). CommonJS code can still `require("@peculiar/attestation-common")` on these versions; Node.js 22.0–22.11 can't. The public API is unchanged. See the [full notes](https://github.com/PeculiarVentures/attestation#breaking-changes-in-v3).
+
+- **TypeScript compiling to CommonJS:** use `"module": "node20"` or `"nodenext"` (`node16` fails with TS1479). ESM and bundler setups need no changes.
+- **Jest in CommonJS mode:** switch to ESM mode or Vitest, or configure an ESM-to-CommonJS transformer and make sure `transformIgnorePatterns` doesn't exclude the `@peculiar/*` packages, `asn1js` and `tsyringe`.
+- **Deep imports** (`@peculiar/attestation-common/build/...`) are blocked by `exports`; import from `@peculiar/attestation-common`.
+- **Peer dependency:** `@peculiar/x509` (`^3.1.0`) is a peer instead of a dependency, so the providers and your app share one copy. npm installs peers automatically.
+
 ## Usage
 
 This example demonstrates how to use the common attestation interfaces and types:
 
 ```typescript
-import { X509Certificate, PublicKey } from "@peculiar/x509";
-import { Attestation, AttestationVerificationParams, AttestationVerificationResult, AttestationProvider } from "@peculiar/attestation-common";
+import * as x509 from "@peculiar/x509";
+import type { Attestation, AttestationVerificationParams, AttestationVerificationResult, AttestationProvider } from "@peculiar/attestation-common";
 
 // Example implementation of an AttestationProvider
 class ExampleAttestationProvider implements AttestationProvider {
@@ -33,7 +54,7 @@ class ExampleAttestationProvider implements AttestationProvider {
     // Implement the logic to read attestation data
     return {
       format: this.format,
-      publicKey: new PublicKey /* public key data */(),
+      publicKey: new x509.PublicKey /* public key data */(),
       metadata: {/* metadata */},
     };
   }

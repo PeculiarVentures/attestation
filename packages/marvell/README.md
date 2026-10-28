@@ -1,4 +1,16 @@
-# @peculiar/attestation-marvell
+<h1 align="center">
+  @peculiar/attestation-marvell
+</h1>
+
+<div align="center">
+
+![NPM License](https://img.shields.io/npm/l/@peculiar/attestation-marvell)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/PeculiarVentures/attestation/publish.yml?branch=main&label=publish)
+[![npm version](https://img.shields.io/npm/v/@peculiar/attestation-marvell.svg)](https://www.npmjs.com/package/@peculiar/attestation-marvell)
+![Coveralls](https://img.shields.io/coverallsCoverage/github/PeculiarVentures/attestation)
+[![npm downloads](https://img.shields.io/npm/dm/@peculiar/attestation-marvell.svg)](https://www.npmjs.com/package/@peculiar/attestation-marvell)
+
+</div>
 
 A library providing tools to verify HSM attestation files from various HSMs that support Marvell attestation, including support for certificate chain validation and attestation data extraction.
 
@@ -17,13 +29,23 @@ To install the library, use npm:
 npm install @peculiar/attestation-marvell
 ```
 
+## Breaking Changes In v3
+
+v3 is ESM-only and requires Node.js `^20.19.0 || >=22.12.0` (2.x had no `engines` field). CommonJS code can still `require("@peculiar/attestation-marvell")` on these versions; Node.js 22.0–22.11 can't. The public API is unchanged, apart from additions (the evidence API and the Google Cloud HSM profile below). See the [full notes](https://github.com/PeculiarVentures/attestation#breaking-changes-in-v3).
+
+- **TypeScript compiling to CommonJS:** use `"module": "node20"` or `"nodenext"` (`node16` fails with TS1479). ESM and bundler setups need no changes.
+- **Jest in CommonJS mode:** switch to ESM mode or Vitest, or configure an ESM-to-CommonJS transformer and make sure `transformIgnorePatterns` doesn't exclude the `@peculiar/*` packages, `asn1js` and `tsyringe`.
+- **Deep imports** (`@peculiar/attestation-marvell/build/...`) are blocked by `exports`; import from `@peculiar/attestation-marvell`.
+- **Peer dependencies:** `@peculiar/x509` (`^3.1.0`), `@peculiar/asn1-schema` (`^3.0.0`) and `tsyringe` (`^4.10.0`) are peers, because the provider resolves x509's algorithm provider from the tsyringe container that x509 registers into. Your app needs one copy of each; npm installs peers automatically.
+- **Byte input:** a `SharedArrayBuffer` (or a view over one) is now accepted, and invalid UTF-8 in the `OBJ_ATTR_LABEL`/`OBJ_ATTR_ID` text attributes decodes to U+FFFD instead of throwing `URI malformed`.
+
 ## Usage
 
 This example uses the generic Marvell profile. For Google Cloud HSM, select the explicit profile described below:
 
 ```typescript
 import { MarvellAttestationProvider } from "@peculiar/attestation-marvell";
-import { x509 } from "@peculiar/x509";
+import * as x509 from "@peculiar/x509";
 
 // Initialize the MarvellAttestationProvider
 const provider = new MarvellAttestationProvider();
