@@ -1,5 +1,5 @@
 import * as x509 from "@peculiar/x509";
-import { BufferSourceConverter, Convert } from "pvtsutils";
+import { hex, isBufferSource } from "@peculiar/utils";
 import type { MarvellAttestation } from "./attestation";
 import { MarvellAttestationParser } from "./parser";
 import { MANUFACTURER_ROOT_CERT, OWNER_ROOT_CERT } from "./certs";
@@ -46,16 +46,16 @@ export class MarvellAttestationValidator {
     try {
       const certificates = prepareCertificates(certs, this.rootCerts);
       stage = "malformed-evidence";
-      const attestation = BufferSourceConverter.isBufferSource(data) ? new MarvellAttestationParser().parse(data as BufferSource) : (data as MarvellAttestation);
+      const attestation = isBufferSource(data) ? new MarvellAttestationParser().parse(data as BufferSource) : (data as MarvellAttestation);
       assertEvidence(attestation);
       stage = "verification-error";
-      const anchors = new Set(this.rootCerts.map((cert) => Convert.ToHex(cert.rawData)));
+      const anchors = new Set(this.rootCerts.map((cert) => hex.encode(cert.rawData)));
       const groups = new Map<string, { certificates: x509.X509Certificate[]; compatible: boolean }>();
       let unreadableKey = false;
       for (const cert of certificates) {
-        if (anchors.has(Convert.ToHex(cert.rawData))) continue;
+        if (anchors.has(hex.encode(cert.rawData))) continue;
         try {
-          const id = Convert.ToHex(cert.publicKey.rawData);
+          const id = hex.encode(cert.publicKey.rawData);
           const group = groups.get(id);
           if (group) group.certificates.push(cert);
           // Preserve the generic validator's existing x509 RSA-PSS-to-PKCS1 export behavior.

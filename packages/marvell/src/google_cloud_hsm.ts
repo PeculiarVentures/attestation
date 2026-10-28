@@ -1,5 +1,5 @@
 import type * as x509 from "@peculiar/x509";
-import { BufferSourceConverter, Convert } from "pvtsutils";
+import { equal, hex, isBufferSource } from "@peculiar/utils";
 import type { MarvellAttestation } from "./attestation";
 import { MarvellAttestationParser } from "./parser";
 import { MANUFACTURER_ROOT_CERT, OWNER_ROOT_CERT } from "./certs";
@@ -42,7 +42,7 @@ interface NormalizedKey {
 function isCertificate(value: unknown): value is x509.X509Certificate {
   if (!value || typeof value !== "object") return false;
   const cert = value as Partial<x509.X509Certificate>;
-  return BufferSourceConverter.isBufferSource(cert.rawData) && typeof cert.verify === "function" && typeof cert.getExtension === "function";
+  return isBufferSource(cert.rawData) && typeof cert.verify === "function" && typeof cert.getExtension === "function";
 }
 
 function copyTrust(value: unknown): GoogleCloudHsmTrust {
@@ -54,7 +54,7 @@ function copyTrust(value: unknown): GoogleCloudHsmTrust {
     throw new TypeError("Google Cloud HSM requires both manufacturerRoot and ownerRoot certificates.");
   }
   prepareCertificates([], [manufacturerRoot, ownerRoot]);
-  if (BufferSourceConverter.isEqual(manufacturerRoot.publicKey.rawData, ownerRoot.publicKey.rawData)) {
+  if (equal(manufacturerRoot.publicKey.rawData, ownerRoot.publicKey.rawData)) {
     throw new TypeError("Google Cloud HSM requires independent manufacturer and owner trust keys.");
   }
   return { manufacturerRoot, ownerRoot };
@@ -80,7 +80,7 @@ export class GoogleCloudHsmAttestationValidator {
         .filter((cert) => !rootIds.has(certificateId(cert)))
         .map((certificate) => ({ certificate, id: certificateId(certificate) }));
       stage = "malformed-evidence";
-      const attestation = BufferSourceConverter.isBufferSource(data) ? new MarvellAttestationParser().parse(data as BufferSource) : (data as MarvellAttestation);
+      const attestation = isBufferSource(data) ? new MarvellAttestationParser().parse(data as BufferSource) : (data as MarvellAttestation);
       assertEvidence(attestation);
       stage = "verification-error";
       const normalized = new Map<string, NormalizedKey | null>();
@@ -96,7 +96,7 @@ export class GoogleCloudHsmAttestationValidator {
           compatibleAlgorithm = publicKey.algorithm.name === "RSASSA-PKCS1-v1_5" || publicKey.algorithm.name === "ECDSA";
           if (compatibleAlgorithm) {
             const key = await publicKey.export({ ...publicKey.algorithm, hash: "SHA-256" }, ["verify"], this.crypto);
-            result = { id: Convert.ToHex(await this.crypto.subtle.exportKey("spki", key)), key };
+            result = { id: hex.encode(await this.crypto.subtle.exportKey("spki", key)), key };
           } else keyErrors.set(node.id, unchecked("unsupported-algorithm", new Error("Unsupported Google Cloud HSM certificate public key.")));
         } catch (error) {
           if (compatibleAlgorithm) normalizationError ??= asError(error);
@@ -125,7 +125,7 @@ export class GoogleCloudHsmAttestationValidator {
         let id = key?.id ?? node.id;
         try {
           compatible = node.certificate.publicKey.algorithm.name === "RSASSA-PKCS1-v1_5";
-          id = key?.id ?? Convert.ToHex(node.certificate.publicKey.rawData);
+          id = key?.id ?? hex.encode(node.certificate.publicKey.rawData);
         } catch {
           /* Unreadable keys remain unsupported candidates. */
         }

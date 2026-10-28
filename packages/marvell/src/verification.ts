@@ -1,6 +1,6 @@
 import type { AttestationVerificationFailure, AttestationVerificationSuccess } from "@peculiar/attestation-common";
 import type { X509Certificate } from "@peculiar/x509";
-import { BufferSourceConverter } from "pvtsutils";
+import { isBufferSource } from "@peculiar/utils";
 import type { MarvellAttestation } from "./attestation";
 
 export type MarvellVerificationReason =
@@ -61,7 +61,7 @@ export function verified(signer: X509Certificate, chain: X509Certificate[]): Mar
 
 /** Validate the parsed input's cryptographic buffers without interpreting the attested key. */
 export function assertEvidence(evidence: MarvellAttestation): void {
-  if (!evidence || !BufferSourceConverter.isBufferSource(evidence.signedData) || !BufferSourceConverter.isBufferSource(evidence.signature)) {
+  if (!evidence || !isBufferSource(evidence.signedData) || !isBufferSource(evidence.signature)) {
     throw new TypeError("Invalid Marvell evidence: signedData and signature must be buffer sources.");
   }
 }
