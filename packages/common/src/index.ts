@@ -8,7 +8,13 @@ export interface Attestation<T = unknown> {
 
 export interface AttestationVerificationParams {
   attestation: Attestation;
+  /** Untrusted certificates available for certificate-path construction. */
   intermediateCerts: X509Certificate[];
+  /**
+   * Trust anchors for this call, replacing the provider's defaults rather than extending them.
+   * Omit or pass undefined to use defaults. An empty array must not fall back to default trust.
+   * Provider-specific requirements, such as the number of required anchors, still apply.
+   */
   trustedCerts?: X509Certificate[];
 }
 

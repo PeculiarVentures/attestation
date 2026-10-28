@@ -115,7 +115,7 @@ marvellCommand
   .command("verify")
   .description("Verify the attestation")
   .argument("<attestation-file>", "The attestation file path")
-  .requiredOption("-c, --cert <file>", "The certificate file path")
+  .requiredOption("-c, --cert <file>", "The untrusted signing and intermediate certificate bundle (PEM)")
   .action(async (attestationFile: string, options: MarvellVerifyOptions) => {
     if (!fs.existsSync(attestationFile)) {
       console.error(`Attestation file not found: ${attestationFile}`);
@@ -139,7 +139,6 @@ marvellCommand
     const result = await marvellAttestation.verify({
       attestation,
       intermediateCerts: certs,
-      trustedCerts: certs,
     });
 
     const key = attestation.publicKey;
