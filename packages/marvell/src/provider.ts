@@ -1,5 +1,6 @@
 import { type AttestationProvider, type Attestation, type AttestationVerificationParams, type AttestationVerificationResult } from "@peculiar/attestation-common";
-import { type X509Certificate } from "@peculiar/x509";
+import { type PublicKey, type X509Certificate } from "@peculiar/x509";
+import { BufferSourceConverter } from "pvtsutils";
 import { GoogleCloudHsmAttestationValidator, type GoogleCloudHsmTrust } from "./google_cloud_hsm";
 import { type MarvellAttestation } from "./attestation";
 import { MarvellAttestationParser } from "./parser";
@@ -13,6 +14,11 @@ export type MarvellAttestationProviderParams = (MarvellAttestationValidatorParam
 
 export type MarvellAttestationVerificationParams = Omit<AttestationVerificationParams, "trustedCerts"> & {
   trustedCerts?: X509Certificate[] | GoogleCloudHsmTrust;
+};
+
+/** Verification does not require extraction or interpretation of the attested public key. */
+export type MarvellEvidenceVerificationParams = Omit<MarvellAttestationVerificationParams, "attestation"> & {
+  evidence: MarvellAttestation | BufferSource;
 };
 
 export class MarvellAttestationProvider implements AttestationProvider {
@@ -32,15 +38,23 @@ export class MarvellAttestationProvider implements AttestationProvider {
     this.validator = this.createValidator(params.trustedCerts);
   }
 
-  async read(data: BufferSource): Promise<MarvellAttestationType> {
-    const parser = new MarvellAttestationParser();
-    const attest = parser.parse(data);
-    const publicKey = this.publicKeyExtractor.extractPublicKey(attest);
+  /** Parses evidence without extracting its attested key or establishing trust. Parsing errors throw. */
+  parse(data: BufferSource): MarvellAttestation {
+    return new MarvellAttestationParser().parse(data);
+  }
 
+  /** Extracts the attested public key; extraction errors are independent of evidence verification. */
+  extractPublicKey(evidence: MarvellAttestation): PublicKey {
+    return this.publicKeyExtractor.extractPublicKey(evidence);
+  }
+
+  /** Retains the shared read() contract: parsing and key extraction must both succeed. */
+  async read(data: BufferSource): Promise<MarvellAttestationType> {
+    const evidence = this.parse(data);
     return {
       format: this.format,
-      publicKey,
-      metadata: attest,
+      publicKey: this.extractPublicKey(evidence),
+      metadata: evidence,
     };
   }
 
@@ -52,13 +66,23 @@ export class MarvellAttestationProvider implements AttestationProvider {
       };
     }
 
+    return this.verifyEvidence({
+      evidence: params.attestation.metadata as MarvellAttestation,
+      intermediateCerts: params.intermediateCerts,
+      trustedCerts: params.trustedCerts,
+    });
+  }
+
+  /** Verifies evidence signatures and the configured certificate policy without extracting the attested key. */
+  async verifyEvidence(params: MarvellEvidenceVerificationParams): Promise<AttestationVerificationResult> {
     try {
-      const { attestation, intermediateCerts, trustedCerts } = params;
+      const { evidence, intermediateCerts, trustedCerts } = params;
       // An explicit trust set replaces defaults for this call without changing shared provider state.
       const validator = trustedCerts === undefined ? this.validator : this.createValidator(trustedCerts);
-      return await validator.validate(attestation.metadata as MarvellAttestation, intermediateCerts);
+      const parsed = BufferSourceConverter.isBufferSource(evidence) ? this.parse(evidence as BufferSource) : (evidence as MarvellAttestation);
+      return await validator.validate(parsed, intermediateCerts);
     } catch (error) {
-      // Invalid per-call trust configuration follows the verification-result contract too.
+      // Parsing and invalid per-call trust configuration follow the verification-result contract too.
       return { status: false, error: error instanceof Error ? error : new Error(String(error)) };
     }
   }

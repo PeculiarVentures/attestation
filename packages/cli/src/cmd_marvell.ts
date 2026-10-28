@@ -9,7 +9,6 @@ import {
   type AttributeValue,
   MarvellAttestationFlags,
   MarvellAttestationProvider,
-  type MarvellAttestationType,
 } from "@peculiar/attestation-marvell";
 import { program } from "./program";
 import { printCertificate, printCertificateShort, printPublicKey, TAB } from "./common";
@@ -79,9 +78,13 @@ function stringifyAttestationFlags(flags: MarvellAttestationFlags) {
   return values.join(" | ");
 }
 
-async function printAttestationDetails(attestation: MarvellAttestationType, tab = "") {
-  printAttestation(attestation.metadata, tab);
-  await printPublicKey(attestation.publicKey, tab);
+async function printAttestedPublicKey(provider: MarvellAttestationProvider, evidence: MarvellAttestation, tab = "") {
+  try {
+    await printPublicKey(provider.extractPublicKey(evidence), tab);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.log(`${tab}Attested public key: unavailable (${message})`);
+  }
 }
 
 async function detailAttestation(file: string) {
@@ -92,9 +95,9 @@ async function detailAttestation(file: string) {
 
   const data = fs.readFileSync(file);
   const marvellAttestation = new MarvellAttestationProvider();
-  const attestation = await marvellAttestation.read(data);
-
-  await printAttestationDetails(attestation, "");
+  const evidence = marvellAttestation.parse(data);
+  printAttestation(evidence);
+  await printAttestedPublicKey(marvellAttestation, evidence);
 }
 
 const marvellCommand = program.command("marvell").description("Marvell attestation commands");
@@ -134,15 +137,14 @@ marvellCommand
     const certs = certBlobs.map((blob) => new x509.X509Certificate(blob));
 
     const marvellAttestation = new MarvellAttestationProvider({ profile: "google-cloud-hsm" });
-    const attestation = await marvellAttestation.read(attestationData);
+    const evidence = marvellAttestation.parse(attestationData);
 
-    const result = await marvellAttestation.verify({
-      attestation,
+    const result = await marvellAttestation.verifyEvidence({
+      evidence,
       intermediateCerts: certs,
     });
 
-    const key = attestation.publicKey;
-    await printPublicKey(key);
+    await printAttestedPublicKey(marvellAttestation, evidence);
     console.log();
 
     if (result.chain) {

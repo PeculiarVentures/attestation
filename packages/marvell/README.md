@@ -53,6 +53,56 @@ const result = await provider.verify({
 console.log(result);
 ```
 
+## Evidence parsing, verification and key extraction
+
+The concrete Marvell provider exposes independent operations so that evidence about a
+symmetric key, an unsupported key algorithm or incomplete key attributes can still be
+inspected and verified without extracting an attested public key:
+
+```typescript
+const provider = new MarvellAttestationProvider({ profile: "google-cloud-hsm" });
+const evidence = provider.parse(attestationData);
+const result = await provider.verifyEvidence({
+  evidence,
+  intermediateCerts: certs,
+});
+
+// Alternatively, pass raw bytes directly; parsing failures become verification results.
+const fromBytes = await provider.verifyEvidence({
+  evidence: attestationData,
+  intermediateCerts: certs,
+});
+
+// Optional and independent: extraction can throw even when result.status is true.
+// Call only when an attested public key is needed, and handle extraction errors separately.
+const publicKey = provider.extractPublicKey(evidence);
+```
+
+| Method                              | Behavior                                                                                                                                           | Failure handling                                                                           |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `parse(data)`                       | Synchronously returns `MarvellAttestation` metadata, signed bytes and signature; does not extract a key                                            | Parsing errors throw                                                                       |
+| `verifyEvidence({ evidence, ... })` | Accepts parsed evidence or a `BufferSource`; verifies the evidence signature and configured certificate policy without extracting the attested key | Returns `{ status: false, error }` for parsing, trust configuration or verification errors |
+| `extractPublicKey(evidence)`        | Synchronously extracts the attested public key using the existing RSA/EC support                                                                   | Existing extraction errors throw, including unsupported key type or curve                  |
+| `read(data)`                        | Preserves the existing `{ format, publicKey, metadata }` result; performs parsing and extraction                                                   | Its promise rejects if either operation fails                                              |
+| `verify({ attestation, ... })`      | Preserves the existing format check and verifies `attestation.metadata` through the same evidence-verification path                                | Preserves the verification-result contract                                                 |
+
+`MarvellEvidenceVerificationParams` is exported from the package entry point. It has
+`evidence` instead of `attestation` and otherwise uses the same `intermediateCerts` and
+`trustedCerts` options as `MarvellAttestationVerificationParams`. Input supports raw or
+gzipped bytes, `ArrayBuffer` and array-buffer views. Both verification methods preserve
+the selected profile, configured Crypto provider and isolated per-call trust overrides.
+
+The shared `AttestationProvider.read()` interface and `Attestation.publicKey` remain
+unchanged: `publicKey` is still required. Existing RSA/EC callers can keep using
+`read()` followed by `verify()`. Use the concrete Marvell provider's evidence API when
+extraction is unnecessary or unsupported; no dummy public key is required.
+
+Parsing and extraction do not authenticate evidence. A successful `verifyEvidence()`
+result confirms the signature and configured certificate policy, independently of
+whether the attested key can be extracted. It does not itself match that key or other
+attributes against an expected external key or resource. This change does not extend
+key algorithm support or add full validation of attested key material.
+
 ## Trusted certificates
 
 `verify({ trustedCerts })` replaces the constructor's trust anchors for that call only.
