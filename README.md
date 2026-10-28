@@ -37,3 +37,7 @@ Install dependencies with `npm ci`. Run `npm run lint` to check code with Oxlint
 ## License
 
 This project is licensed under the MIT License.
+
+## Module compatibility
+
+The packages ship as ES modules and support Node.js ^20.19.0 or >=22.12.0. CommonJS consumers can use `require()` on these versions. The package entry points are defined by `exports`; importing internal build paths is unsupported. TypeScript CommonJS consumers should use `module: node20` or `nodenext` with compatible TypeScript.

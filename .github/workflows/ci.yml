@@ -20,7 +20,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run lint
         run: npm run lint
@@ -30,6 +30,12 @@ jobs:
 
       - name: Type check
         run: npm run typecheck
+
+      - name: Build packages
+        run: npm run build
+
+      - name: Check package entry points
+        run: npm run test:package
 
       - name: Run tests with coverage
         run: npm run coverage

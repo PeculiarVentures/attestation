@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import * as x509 from "@peculiar/x509";
-import { SlotInfo, PivTokenManager, PivTokenAttestation, PivAttestationProvider } from "@peculiar/attestation-yubico";
+import { type SlotInfo, PivTokenManager, type PivTokenAttestation, PivAttestationProvider } from "@peculiar/attestation-yubico";
 import { program } from "./program";
 import { printCertificateShort, printPublicKey, TAB } from "./common";
 

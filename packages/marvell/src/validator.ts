@@ -1,7 +1,7 @@
-import { AttestationVerificationResult } from "@peculiar/attestation-common";
+import { type AttestationVerificationResult } from "@peculiar/attestation-common";
 import * as x509 from "@peculiar/x509";
 import { BufferSourceConverter } from "pvtsutils";
-import { MarvellAttestation } from "./attestation";
+import { type MarvellAttestation } from "./attestation";
 import { MarvellAttestationParser } from "./parser";
 import { MANUFACTURER_ROOT_CERT, OWNER_ROOT_CERT } from "./certs";
 

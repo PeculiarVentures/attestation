@@ -2,17 +2,17 @@ import * as pako from "pako";
 import { BufferSourceConverter, Convert } from "pvtsutils";
 import { DataViewReader } from "./view_reader";
 import {
-  AttributeMap,
+  type AttributeMap,
   MarvellAttributeType,
   CryptokiKeyType,
   CryptokiObjectClass,
-  InfoHeader,
-  ObjectAttributes,
-  ResponseHeader,
-  Attributes,
-  MarvellAttestation,
-  AttributeValue,
-  MarvellAttestationData,
+  type InfoHeader,
+  type ObjectAttributes,
+  type ResponseHeader,
+  type Attributes,
+  type MarvellAttestation,
+  type AttributeValue,
+  type MarvellAttestationData,
 } from "./attestation";
 
 function isGZIP(data: Uint8Array): boolean {

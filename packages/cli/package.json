@@ -2,7 +2,7 @@
   "name": "@peculiar/attestation-cli",
   "version": "2.0.0",
   "description": "A CLI utility for verifying attestation data in various formats, supporting multiple attestation providers and offering a range of commands to interact with attestation files and certificates.",
-  "homepage": "https://github.com/PeculiarVentures/attestation/tree/master/packages/cli#readme",
+  "homepage": "https://github.com/PeculiarVentures/attestation/tree/main/packages/cli#readme",
   "bugs": {
     "url": "https://github.com/PeculiarVentures/attestation/issues"
   },
@@ -25,10 +25,6 @@
     "commander": "^14.0.3",
     "tslib": "^2.8.1"
   },
-  "scripts": {
-    "clean": "rimraf build",
-    "build": "npm run clean && tsc -p tsconfig.build.json"
-  },
   "keywords": [
     "kms",
     "attestation",
@@ -37,5 +33,17 @@
     "hsm"
   ],
   "author": "PeculiarVentures",
-  "license": "MIT"
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PeculiarVentures/attestation",
+    "directory": "packages/cli"
+  }
 }

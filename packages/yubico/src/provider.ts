@@ -1,5 +1,5 @@
 import * as x509 from "@peculiar/x509";
-import { Attestation, AttestationProvider, AttestationVerificationParams, AttestationVerificationResult } from "@peculiar/attestation-common";
+import { type Attestation, type AttestationProvider, type AttestationVerificationParams, type AttestationVerificationResult } from "@peculiar/attestation-common";
 import { YUBICO_ROOT_CERT } from "./certs";
 
 export type PivAttestation = Attestation<x509.X509Certificate>;
