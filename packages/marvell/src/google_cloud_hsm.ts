@@ -1,6 +1,6 @@
-import * as x509 from "@peculiar/x509";
+import type * as x509 from "@peculiar/x509";
 import { BufferSourceConverter, Convert } from "pvtsutils";
-import { type MarvellAttestation } from "./attestation";
+import type { MarvellAttestation } from "./attestation";
 import { MarvellAttestationParser } from "./parser";
 import { MANUFACTURER_ROOT_CERT, OWNER_ROOT_CERT } from "./certs";
 import { CertificateLimitError, certificateId, prepareCertificates } from "./certificates";

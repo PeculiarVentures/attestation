@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, expectTypeOf, it, vi } from "vitest";
 import { gunzipSync } from "node:zlib";
 import * as x509 from "@peculiar/x509";
 import { Crypto as PeculiarCrypto } from "@peculiar/webcrypto";
-import { type AttestationProvider, type AttestationVerificationResult } from "@peculiar/attestation-common";
+import type { AttestationProvider, AttestationVerificationResult } from "@peculiar/attestation-common";
 import { MarvellAttestationProvider, type GoogleCloudHsmTrust, type MarvellAttestation, type MarvellAttestationVerificationResult, type MarvellEvidenceVerificationParams } from "./index";
 import { base64CompressedData } from "../test/fixtures";
 

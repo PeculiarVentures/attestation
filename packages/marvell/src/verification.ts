@@ -1,7 +1,7 @@
-import { type AttestationVerificationFailure, type AttestationVerificationSuccess } from "@peculiar/attestation-common";
-import { type X509Certificate } from "@peculiar/x509";
+import type { AttestationVerificationFailure, AttestationVerificationSuccess } from "@peculiar/attestation-common";
+import type { X509Certificate } from "@peculiar/x509";
 import { BufferSourceConverter } from "pvtsutils";
-import { type MarvellAttestation } from "./attestation";
+import type { MarvellAttestation } from "./attestation";
 
 export type MarvellVerificationReason =
   | "invalid-signature"

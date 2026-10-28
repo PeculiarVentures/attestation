@@ -1,4 +1,4 @@
-import { type X509Certificate } from "@peculiar/x509";
+import type { X509Certificate } from "@peculiar/x509";
 import { Convert } from "pvtsutils";
 
 export class CertificateLimitError extends Error {}

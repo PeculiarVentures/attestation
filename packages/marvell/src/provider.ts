@@ -1,10 +1,10 @@
-import { type AttestationProvider, type Attestation, type AttestationVerificationParams } from "@peculiar/attestation-common";
-import { type PublicKey, type X509Certificate } from "@peculiar/x509";
+import type { AttestationProvider, Attestation, AttestationVerificationParams } from "@peculiar/attestation-common";
+import type { PublicKey, X509Certificate } from "@peculiar/x509";
 import { BufferSourceConverter } from "pvtsutils";
 import { CertificateLimitError } from "./certificates";
 import { type MarvellAttestationVerificationResult, type MarvellVerificationReason, unverified } from "./verification";
 import { GoogleCloudHsmAttestationValidator, type GoogleCloudHsmTrust } from "./google_cloud_hsm";
-import { type MarvellAttestation } from "./attestation";
+import type { MarvellAttestation } from "./attestation";
 import { MarvellAttestationParser } from "./parser";
 import { PublicKeyExtractor } from "./public_key";
 import { MarvellAttestationValidator, type MarvellAttestationValidatorParams } from "./validator";
