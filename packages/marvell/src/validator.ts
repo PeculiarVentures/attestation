@@ -4,10 +4,9 @@ import { BufferSourceConverter, Convert } from "pvtsutils";
 import { type MarvellAttestation } from "./attestation";
 import { MarvellAttestationParser } from "./parser";
 import { MANUFACTURER_ROOT_CERT, OWNER_ROOT_CERT } from "./certs";
+import { prepareCertificates } from "./certificates";
 
 // Bound preparation and repeated searches as well as each individual x509 traversal.
-const MAX_CERTIFICATES = 64;
-const MAX_CERTIFICATE_BYTES = 1024 * 1024;
 const MAX_CHAIN_ATTEMPTS = 128;
 const CHAIN_LIMITS = { maxDepth: 16, maxSearchSteps: 10_000 };
 
@@ -41,7 +40,7 @@ export class MarvellAttestationValidator {
    */
   public async validate(data: Uint8Array | MarvellAttestation, certs: x509.X509Certificate[]): Promise<AttestationVerificationResult> {
     try {
-      const certificates = this.prepareCertificates(certs);
+      const certificates = prepareCertificates(certs, this.rootCerts);
       const anchors = new Set(this.rootCerts.map((cert) => Convert.ToHex(cert.rawData)));
       const signers = new Map<string, x509.X509Certificate[]>();
       for (const cert of certificates) {
@@ -105,26 +104,6 @@ export class MarvellAttestationValidator {
     } catch (error) {
       return { status: false, error: error instanceof Error ? error : new Error(String(error)) };
     }
-  }
-
-  private prepareCertificates(certs: x509.X509Certificate[]): x509.X509Certificate[] {
-    if (certs.length + this.rootCerts.length > MAX_CERTIFICATES) {
-      throw new Error(`Too many certificates. At most ${MAX_CERTIFICATES} input certificates and trust anchors are supported in total.`);
-    }
-    const unique = new Map<string, x509.X509Certificate>();
-    let bytes = 0;
-    for (const cert of [...certs, ...this.rootCerts]) {
-      bytes += cert.rawData.byteLength;
-      if (bytes > MAX_CERTIFICATE_BYTES) {
-        throw new Error(`Certificate data exceeds the ${MAX_CERTIFICATE_BYTES}-byte limit.`);
-      }
-      const id = Convert.ToHex(cert.rawData);
-      if (!unique.has(id)) {
-        unique.set(id, cert);
-      }
-    }
-    // Stable candidate selection also bounds the effect of ordering when a search exhausts its budget.
-    return [...unique].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([, cert]) => cert);
   }
 
   private async getCertificateChain(root: x509.X509Certificate, candidates: x509.X509Certificate[], builder: x509.X509ChainBuilder, budget: ChainSearchBudget): Promise<x509.X509Certificate[] | null> {

@@ -38,8 +38,12 @@ attest marvell verify evidence.bin --cert certificates.pem
 ```
 
 `--cert` supplies the untrusted signing and intermediate certificate bundle in PEM
-format. Verification uses the bundled manufacturer and owner trust anchors; the
-certificate bundle does not replace or extend that trust configuration.
+format. This command explicitly selects the Google Cloud HSM profile, requiring the
+manufacturer card/partition chain, direct Google owner-card and owner-partition
+certificates, matching card/partition keys and a valid evidence signature. It uses the
+bundled manufacturer and owner trust anchors; the certificate bundle does not replace
+or extend that trust configuration. A missing owner component now fails verification.
+The generic Marvell profile remains available through the library API.
 
 ## License
 

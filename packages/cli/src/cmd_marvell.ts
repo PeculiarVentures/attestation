@@ -113,7 +113,7 @@ interface MarvellVerifyOptions {
 
 marvellCommand
   .command("verify")
-  .description("Verify the attestation")
+  .description("Verify Google Cloud HSM card/partition relationships and attestation signature")
   .argument("<attestation-file>", "The attestation file path")
   .requiredOption("-c, --cert <file>", "The untrusted signing and intermediate certificate bundle (PEM)")
   .action(async (attestationFile: string, options: MarvellVerifyOptions) => {
@@ -133,7 +133,7 @@ marvellCommand
     const certBlobs = x509.PemConverter.decode(certData.toString());
     const certs = certBlobs.map((blob) => new x509.X509Certificate(blob));
 
-    const marvellAttestation = new MarvellAttestationProvider();
+    const marvellAttestation = new MarvellAttestationProvider({ profile: "google-cloud-hsm" });
     const attestation = await marvellAttestation.read(attestationData);
 
     const result = await marvellAttestation.verify({

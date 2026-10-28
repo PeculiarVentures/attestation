@@ -19,7 +19,7 @@ npm install @peculiar/attestation-marvell
 
 ## Usage
 
-This example demonstrates how to verify an HSM attestation:
+This example uses the generic Marvell profile. For Google Cloud HSM, select the explicit profile described below:
 
 ```typescript
 import { MarvellAttestationProvider } from "@peculiar/attestation-marvell";
@@ -62,8 +62,8 @@ No anchors are merged automatically, and an unsuccessful override never falls ba
 constructor or bundled roots. To combine trust configurations, explicitly supply the
 complete intended set.
 
-Marvell requires at least two configured anchors and a path to **every** anchor in the
-selected set. An explicit empty array or a one-certificate override returns
+The **generic** profile uses a certificate array and requires at least two configured
+anchors and a path to **every** anchor in the selected set. An explicit empty array or a one-certificate override returns
 `{ status: false, error }`; invalid constructor configuration still throws immediately.
 Yubico's trust-store policy differs: it accepts a path to any configured anchor.
 
@@ -81,7 +81,90 @@ Per-call overrides are isolated from concurrent and subsequent calls and preserv
 constructor's WebCrypto provider. The CLI's `--cert` bundle supplies untrusted signing
 and intermediate certificates; it does not replace the bundled trust anchors.
 
-## Certificate path verification
+## Google Cloud HSM profile
+
+Select the profile explicitly; `new MarvellAttestationProvider()` retains generic
+validation and does not infer a profile from certificate names, bundle contents or
+trust overrides. The CLI's `marvell verify` command selects `google-cloud-hsm`.
+
+```typescript
+const provider = new MarvellAttestationProvider({ profile: "google-cloud-hsm" });
+const result = await provider.verify({ attestation, intermediateCerts: certs });
+```
+
+The profile requires one complete set of four distinct certificate identities:
+
+```text
+manufacturerRoot -> manufacturerCard -> manufacturerPartition
+ownerRoot        -> ownerCard
+ownerRoot        -> ownerPartition
+
+key(manufacturerCard)      = key(ownerCard)
+key(manufacturerPartition) = key(ownerPartition)
+```
+
+Every arrow is an immediate issuer/subject match and verified certificate signature.
+The partition key must also verify the evidence signature. An indirect path through
+owner-card cannot replace owner-partition. Roles are established by these relationships,
+not CN text, certificate ordering or SKI. When one combination fails, alternative
+combinations are tried in deterministic DER order.
+
+Keys are compared as canonical SPKI exported through the configured WebCrypto provider.
+RSA PKCS#1 and EC public keys are supported for anchors and card certificates; the
+evidence signer must use RSA PKCS#1 v1.5 with SHA-256. RSA-PSS restrictions are not
+stripped to make keys match. Equal card/partition keys are permitted when the four
+certificates are distinct. Configured anchors cannot occupy these roles, and
+manufacturer and owner anchors must have independent public keys.
+
+The default named pair is the bundled Marvell/Cavium manufacturer root and Google's
+Hawksbill owner root. To use custom authorities, specify both roles explicitly:
+
+```typescript
+const provider = new MarvellAttestationProvider({
+  profile: "google-cloud-hsm",
+  trustedCerts: { manufacturerRoot, ownerRoot },
+});
+
+const result = await provider.verify({
+  attestation,
+  intermediateCerts: certs,
+  trustedCerts: { manufacturerRoot: replacementManufacturer, ownerRoot: replacementOwner },
+});
+```
+
+A per-call pair replaces both constructor anchors without changing the profile or
+falling back. Omission or `undefined` keeps constructor defaults. Flat arrays (including
+`[]`), partial pairs and `null` are rejected explicitly. Structural constructor
+configuration errors throw; invalid per-call configuration returns `{ status: false,
+error }`. Key errors requiring asynchronous normalization (including equivalent anchor
+keys with different SPKI encodings) also return a failed verification result.
+Named trust objects are snapshotted before asynchronous verification. Use the concrete
+Marvell provider and its `MarvellAttestationVerificationParams` type for these overrides;
+the shared provider interface retains its array-based trust parameter. The generic
+profile rejects named pairs. Custom anchors bind the authorities selected by the caller.
+Root rotation requires an explicit replacement of the complete named pair.
+
+On success, `signer` is manufacturer-partition and `chain` is
+`[manufacturerRoot, manufacturerCard, manufacturerPartition]`. The shared result shape
+is unchanged. Missing, substituted or incorrectly signed components cannot be replaced
+by duplicate copies of another role's certificate.
+
+Input remains bounded to 64 certificates and anchors combined, and 1 MiB of combined
+DER (including duplicates). Direct relation results and key normalization are cached per
+call: at most 64 squared certificate pairs and one evidence check per normalized key.
+There is no recursive path search in this profile. Unused certificates, duplicate DER
+and copies of anchors are permitted when a complete proof exists; they do not establish
+trust. This deliberately differs from the reference script's rejection of unused entries.
+
+The guarantees cover the four certificate relationships, the two key equalities and
+the signature over `signedData`. Certificate dates, CA constraints, usages, policies,
+revocation, evidence freshness and matching an expected resource ID or external public
+key are separate checks. This profile preserves signature-only certificate verification.
+
+See [Google's reference verifier](https://github.com/GoogleCloudPlatform/python-docs-samples/blob/main/kms/attestations/verify_attestation_chains.py)
+and [Cloud HSM attestation guidance](https://docs.cloud.google.com/kms/docs/attest-key).
+
+## Generic certificate path verification
 
 The validator identifies candidate signing keys using the evidence signature, then uses
 `X509ChainBuilder.buildToAnchor()` to confirm a path to **every** configured root.
@@ -98,8 +181,9 @@ Resource exhaustion returns `status: false`; x509's `LIMIT_EXCEEDED` error is re
 when no other candidate supplies the required path after a depth or step limit.
 Evidence parsing and decompression are outside these certificate-search limits.
 
-The path builder checks certificate signatures and explicit anchor membership. These
-checks do not add full PKIX validation or the Google-specific card/partition policy.
+The generic path builder checks certificate signatures and explicit anchor membership.
+The Google-specific card/partition guarantees belong to the explicit Google profile;
+full PKIX validation remains outside both profiles.
 A failed verification can omit `signer` and `chain`, including when no signing key
 verifies the evidence signature.
 
