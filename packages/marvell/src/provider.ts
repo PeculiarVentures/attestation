@@ -1,6 +1,6 @@
 import type { AttestationProvider, Attestation, AttestationVerificationParams } from "@peculiar/attestation-common";
 import type { PublicKey, X509Certificate } from "@peculiar/x509";
-import { BufferSourceConverter } from "pvtsutils";
+import { isBufferSource } from "@peculiar/utils";
 import { CertificateLimitError } from "./certificates";
 import { type MarvellAttestationVerificationResult, type MarvellVerificationReason, unverified } from "./verification";
 import { GoogleCloudHsmAttestationValidator, type GoogleCloudHsmTrust } from "./google_cloud_hsm";
@@ -80,7 +80,7 @@ export class MarvellAttestationProvider implements AttestationProvider {
       // An explicit trust set replaces defaults for this call without changing shared provider state.
       const validator = trustedCerts === undefined ? this.validator : this.createValidator(trustedCerts);
       stage = "malformed-evidence";
-      const parsed = BufferSourceConverter.isBufferSource(evidence) ? this.parse(evidence as BufferSource) : (evidence as MarvellAttestation);
+      const parsed = isBufferSource(evidence) ? this.parse(evidence as BufferSource) : (evidence as MarvellAttestation);
       stage = "verification-error";
       return await validator.validate(parsed, intermediateCerts);
     } catch (error) {

@@ -1,10 +1,10 @@
 import type { X509Certificate } from "@peculiar/x509";
-import { Convert } from "pvtsutils";
+import { hex } from "@peculiar/utils";
 
 export class CertificateLimitError extends Error {}
 
 export function certificateId(cert: X509Certificate): string {
-  return Convert.ToHex(cert.rawData);
+  return hex.encode(cert.rawData);
 }
 
 /** Bounds preparation before allocating DER identities; both profiles use the same input limits. */

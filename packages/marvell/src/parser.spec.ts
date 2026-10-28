@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { gunzipSync } from "node:zlib";
 import { MarvellAttestationParser } from "./parser";
+import { base64CompressedData } from "../test/fixtures";
 
 // ECC
 const eccData = `H4sIAAAAAAAAAGNgAANmBgYOBwYGdgUIl/0ZhFZaxsAIlONgngIVUwYqbYDIMTAyATGYwcwAYYFEGECYEchjZIExWGHSbDARdpgIB4zBBZNKhjHghiZBRUCOZGhILCiIz06tZBg4APZlQ4qBWXKyhYFhmnlKWlpKUkqKeaKlkYlBUkqyQWKqYWKKoZGJhZmRpYVBcqK5sVFyqqmJiVmaYXKKQZI5SG1iknGqsWFKkpGlqYVRokFSkoVJcpJhirlFiqF5khnQaLOkVDMj08RU41RzkxRjSzPLNMMU41QDC3NjC/Nk86QUoDsSge4ABbIjkF0MCp/GjcsZGARAwaTgULr46UI7Y84Qg2lae3adfm90vbjIpK299ZITx2RN+xNZQHUgv3BA/cTUwMBYAtJHwO//gepKiVRXRqS6ciLVVRCprpJIdQ3EqAMGLUiNI4uHUWDm4rJ2i9nf7um/Xi86I5Y5qKB7H5O29hyfvN8Vd+qv+vEqLF6Vx/YueCOrfqIUr9M2gUbP3u2dB6aH7WDkulUANEiRARxfjPOBdBsDJHUzCUAZjDwwRiqY0QDNSSAGPCukQBnAfImWF5mJyIsMsLzICMuLDLC8yAjLi4ywvMiAkRcZYXkRZM9oXsSeF7tG8yKyumGRF0Guw5EXGRtLNh6VepC1cUnAzPfnr3rYnfKe9/Dzyeb6y99ebEyz/XdD+WXTf/6G9m1P/wgq9nwRnbt1mu36kzMTS644NlXKR//pnSC7zMNKbhWDz7KJHNGbddqu8ksuuusdwyPmfzD9WMKXwq1Skx8a9jaeTec/Xte8eqftROmVG58+LQv73ainq7wzp/naxEdOYc/annt/jHryjO+M9puZXKn/lFNyJX7rLrkWUff2+BsZpltmDziT+E49UtRVOpqpy7Cve6qesGrgh+6P5xlaFz4v/p3d6ChbWr9z3XnZmgXXnuw8IpTELXA+4Wn7lgnSgf0/DKx7JofqTbc8U3mw/HnZSdc1GzZNf63s8l3lTrrG/wcAkcwjK0AIAAA=`;
@@ -19,5 +21,58 @@ describe("Marvell:Parser", () => {
     const result = parser.parse(Buffer.from(rsaData, "base64"));
     expect(result.attestationData.firstKey.attributes.OBJ_ATTR_KEY_TYPE).toBe("CKK_RSA");
     expect(result.attestationData.secondKey).toBeFalsy();
+  });
+});
+
+/** Copies data into a larger buffer and returns a view of it at a non-zero byte offset. */
+function embed(data: Uint8Array, offset: number): Uint8Array<ArrayBuffer> {
+  const buffer = new Uint8Array(offset + data.length + 7).fill(0xa5);
+  buffer.set(data, offset);
+  return buffer.subarray(offset, offset + data.length);
+}
+
+function shared(data: Uint8Array): SharedArrayBuffer {
+  const buffer = new SharedArrayBuffer(data.length);
+  new Uint8Array(buffer).set(data);
+  return buffer;
+}
+
+describe("Marvell:Parser byte inputs", () => {
+  const compressed = Buffer.from(base64CompressedData, "base64");
+  const raw = gunzipSync(compressed);
+  const expected = new MarvellAttestationParser().parse(Uint8Array.from(raw));
+
+  it.each([
+    ["raw", raw],
+    ["gzipped", compressed],
+  ])("parses a %s view with a non-zero byte offset", (_, data) => {
+    const result = new MarvellAttestationParser().parse(embed(data, 13));
+    expect(result.attestationData).toEqual(expected.attestationData);
+    expect(Buffer.from(result.signedData).equals(Buffer.from(expected.signedData))).toBe(true);
+    expect(Buffer.from(result.signature).equals(Buffer.from(expected.signature))).toBe(true);
+  });
+
+  it("parses a DataView with a non-zero byte offset", () => {
+    const view = embed(raw, 5);
+    const result = new MarvellAttestationParser().parse(new DataView(view.buffer, view.byteOffset, view.byteLength));
+    expect(result.attestationData).toEqual(expected.attestationData);
+  });
+
+  it.each([
+    ["raw", raw],
+    ["gzipped", compressed],
+  ])("parses %s bytes in a SharedArrayBuffer", (_, data) => {
+    const result = new MarvellAttestationParser().parse(shared(data) as unknown as ArrayBuffer);
+    expect(result.attestationData).toEqual(expected.attestationData);
+  });
+
+  it("decodes invalid UTF-8 in text attributes with replacement characters", () => {
+    const label = expected.attestationData.firstKey.attributes.OBJ_ATTR_LABEL;
+    expect(label).toBe("app_key");
+    const corrupted = Uint8Array.from(raw);
+    const offset = Buffer.from(corrupted).indexOf("app_key");
+    corrupted[offset + 3] = 0xff;
+    const result = new MarvellAttestationParser().parse(corrupted);
+    expect(result.attestationData.firstKey.attributes.OBJ_ATTR_LABEL).toBe("app�key");
   });
 });

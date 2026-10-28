@@ -1,5 +1,5 @@
 import * as pako from "pako";
-import { BufferSourceConverter, Convert } from "pvtsutils";
+import { isSharedArrayBuffer, toArrayBuffer, toUint8Array, toUint8ArrayCopy, utf8 } from "@peculiar/utils";
 import { DataViewReader } from "./view_reader";
 import {
   type AttributeMap,
@@ -33,7 +33,7 @@ function parseAttributeBoolean(value: Uint8Array): boolean {
 
 function parseAttributeText(value: Uint8Array): string {
   const nullIndex = value.findIndex((byte) => byte === 0);
-  return Convert.ToUtf8String(value.slice(0, nullIndex));
+  return utf8.decode(value.slice(0, nullIndex));
 }
 
 function parseAttributeNumber(value: Uint8Array): number {
@@ -141,13 +141,15 @@ export class MarvellAttestationParser {
 
   public parse(data: BufferSource): MarvellAttestation {
     let compressed = false;
-    let view = BufferSourceConverter.toUint8Array(data);
+    let view = toUint8Array(data);
+    // WebCrypto rejects views over shared memory, and signedData/signature are views of this input.
+    if (isSharedArrayBuffer(view.buffer)) view = toUint8ArrayCopy(view);
     if (isGZIP(view)) {
       view = pako.inflate(view);
       compressed = true;
     }
 
-    this.view = new DataView(BufferSourceConverter.toArrayBuffer(view));
+    this.view = new DataView(toArrayBuffer(view));
     this.reader = new DataViewReader(this.view);
 
     const responseHeader = this.readResponseHeader();

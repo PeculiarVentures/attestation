@@ -169,15 +169,18 @@ describe.each(profiles)("Marvell evidence API (%s)", (profile) => {
     expect(extract).not.toHaveBeenCalled();
   });
 
-  it.each(["ArrayBuffer", "offset Uint8Array", "offset DataView", "gzip"])("accepts %s input without extraction", async (kind) => {
+  it.each(["ArrayBuffer", "offset Uint8Array", "offset DataView", "gzip", "SharedArrayBuffer"])("accepts %s input without extraction", async (kind) => {
     const bytes = unsupported.AES;
     const padded = new Uint8Array(bytes.length + 10);
     padded.set(bytes, 4);
+    const shared = new SharedArrayBuffer(bytes.length);
+    new Uint8Array(shared).set(bytes);
     const inputs: Record<string, BufferSource> = {
       ArrayBuffer: bytes.buffer.slice(0),
       "offset Uint8Array": padded.subarray(4, 4 + bytes.length),
       "offset DataView": new DataView(padded.buffer, 4, bytes.length),
       gzip: Uint8Array.from(gzipSync(bytes)),
+      SharedArrayBuffer: shared as unknown as ArrayBuffer,
     };
     const instance = provider(profile);
     const parsed = instance.parse(inputs[kind]);
