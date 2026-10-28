@@ -17,11 +17,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "tsx": "^4.21.0"
+    "tsx": "^4.23.15"
   },
   "devDependencies": {
     "@abraham/reflection": "^0.13.0",
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.9.9",
     "@types/pako": "^2.0.4",
     "lerna": "^9.0.7",
     "rimraf": "^6.1.3",
