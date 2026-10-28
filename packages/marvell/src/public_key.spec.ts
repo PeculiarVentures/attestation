@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { PublicKeyExtractor } from "./public_key";
 import { Attributes, MarvellAttestation, MarvellAttestationFlags } from "./attestation";
 
