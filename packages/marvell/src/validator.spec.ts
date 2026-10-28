@@ -55,11 +55,12 @@ describe("Marvell:Validator", () => {
   });
 
   it("should throw an error if initialized with a single trusted certificate", () => {
-    expect(() => {
-      new MarvellAttestationValidator({
-        trustedCerts: [OWNER_ROOT_CERT],
-      });
-    }).toThrow();
+    expect(
+      () =>
+        new MarvellAttestationValidator({
+          trustedCerts: [OWNER_ROOT_CERT],
+        }),
+    ).toThrow();
   });
 });
 

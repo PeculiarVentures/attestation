@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop -- Output is printed in order: each printer awaits its digests and then writes to the console. */
 import fs from "node:fs";
 import * as x509 from "@peculiar/x509";
 import {
