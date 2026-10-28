@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "3.0.0",
   "name": "@peculiar/attestation-yubico",
   "description": "A library providing tools to verify PIV attestation files from Yubico, including support for certificate chain validation and attestation data extraction.",
   "homepage": "https://github.com/PeculiarVentures/attestation/tree/main/packages/yubico#readme",
@@ -15,7 +15,7 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@peculiar/attestation-common": "^2.0.0",
+    "@peculiar/attestation-common": "^3.0.0",
     "graphene-pk11": "^2.3.6"
   },
   "peerDependencies": {
