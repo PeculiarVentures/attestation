@@ -10,10 +10,9 @@
   "module": "./build/index.js",
   "types": "./build/index.d.ts",
   "files": [
-    "build",
-    "LICENSE",
+    "build/",
     "README.md",
-    "package.json"
+    "LICENSE"
   ],
   "dependencies": {
     "@peculiar/attestation-common": "^2.0.0",

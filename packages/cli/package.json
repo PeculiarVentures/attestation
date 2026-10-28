@@ -11,11 +11,9 @@
   },
   "main": "./bin/main.js",
   "files": [
-    "bin",
-    "build",
-    "LICENSE",
+    "bin/",
     "README.md",
-    "package.json"
+    "LICENSE"
   ],
   "dependencies": {
     "@abraham/reflection": "^0.13.0",
