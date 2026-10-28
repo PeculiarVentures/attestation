@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.0](https://github.com/PeculiarVentures/attestation/compare/v2.0.0...v3.0.0) (2026-10-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* publish ESM-only packages ([#15](https://github.com/PeculiarVentures/attestation/issues/15))
+
+### Features
+
+* improve Marvell and Yubico attestation verification ([#27](https://github.com/PeculiarVentures/attestation/issues/27)) ([9638d8a](https://github.com/PeculiarVentures/attestation/commit/9638d8a2ebfa9108115b9cc2429e497e4d145b18))
+* publish ESM-only packages ([#15](https://github.com/PeculiarVentures/attestation/issues/15)) ([470a701](https://github.com/PeculiarVentures/attestation/commit/470a7010164e2be7446b33fe3fb9dbda70990e13))
+
 ## [1.1.1](https://github.com/PeculiarVentures/attestation/compare/v1.1.0...v1.1.1) (2025-03-12)
 
 **Note:** Version bump only for package root
