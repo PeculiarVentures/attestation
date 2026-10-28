@@ -4,7 +4,7 @@ import * as x509 from "@peculiar/x509";
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { AlgorithmIdentifier, Certificate } from "@peculiar/asn1-x509";
 import { Crypto as PeculiarCrypto } from "@peculiar/webcrypto";
-import { type AttestationProvider, type AttestationVerificationResult } from "@peculiar/attestation-common";
+import type { AttestationProvider, AttestationVerificationResult } from "@peculiar/attestation-common";
 import { MarvellAttestationProvider, type GoogleCloudHsmTrust, type MarvellAttestationProviderParams } from "./provider";
 import { MANUFACTURER_ROOT_CERT, OWNER_ROOT_CERT } from "./certs";
 import { base64CompressedData, certChain } from "../test/fixtures";
