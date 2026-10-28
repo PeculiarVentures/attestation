@@ -24,7 +24,7 @@ export class PivTokenManager {
     this.slots = this.module.getSlots(true);
   }
 
-  public close() {
+  public close(): void {
     this.module.finalize();
     this.module.close();
   }

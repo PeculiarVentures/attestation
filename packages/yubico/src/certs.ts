@@ -21,4 +21,4 @@ const YUBICO_ROOT_CERT_PEM = [
   "SREzU8onbBsjMg9QDiSf5oJLKvd/Ren+zGY7",
   "-----END CERTIFICATE-----",
 ].join("\n");
-export const YUBICO_ROOT_CERT = new x509.X509Certificate(YUBICO_ROOT_CERT_PEM);
+export const YUBICO_ROOT_CERT: x509.X509Certificate = new x509.X509Certificate(YUBICO_ROOT_CERT_PEM);
