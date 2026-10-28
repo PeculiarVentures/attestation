@@ -1,6 +1,6 @@
 import * as x509 from "@peculiar/x509";
 import { type Attestation, type AttestationProvider, type AttestationVerificationParams, type AttestationVerificationResult } from "@peculiar/attestation-common";
-import { YUBICO_ROOT_CERT } from "./certs";
+import { YUBICO_ROOT_CERT, YUBICO_ROOT_CERTS, YUBICO_INTERMEDIATE_CERTS } from "./certs";
 
 export type PivAttestation = Attestation<x509.X509Certificate>;
 
@@ -16,22 +16,32 @@ export class PivAttestationProvider implements AttestationProvider {
     };
   }
 
+  /**
+   * Returns the legacy Yubico PIV root certificate.
+   * @deprecated Use getDefaultRootCerts() to trust both legacy and newer YubiKeys.
+   */
   public getDefaultRootCert(): x509.X509Certificate {
     return YUBICO_ROOT_CERT;
   }
 
+  /** Returns all bundled production Yubico root certificates. */
+  public getDefaultRootCerts(): x509.X509Certificate[] {
+    return [...YUBICO_ROOT_CERTS];
+  }
+
   async verify(params: AttestationVerificationParams): Promise<AttestationVerificationResult> {
-    const trustedCerts = params.trustedCerts || [YUBICO_ROOT_CERT];
+    const trustedCerts = params.trustedCerts ?? this.getDefaultRootCerts();
     const chainBuilder = new x509.X509ChainBuilder({
-      certificates: [...params.intermediateCerts, ...trustedCerts],
+      certificates: [...params.intermediateCerts, ...YUBICO_INTERMEDIATE_CERTS, ...trustedCerts],
     });
     const chain = await chainBuilder.build(params.attestation.metadata as x509.X509Certificate);
 
-    const rootCert = chain[chain.length - 1];
-    if (trustedCerts.some((cert) => cert.equal(rootCert))) {
+    // Bundled issuers may extend the path above an explicitly pinned trust anchor.
+    const trustedIndex = chain.findIndex((cert) => trustedCerts.some((trusted) => trusted.equal(cert)));
+    if (trustedIndex !== -1) {
       return {
         status: true,
-        chain,
+        chain: chain.slice(0, trustedIndex + 1),
         signer: chain[0],
       };
     }

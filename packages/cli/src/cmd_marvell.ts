@@ -2,6 +2,7 @@ import fs from "node:fs";
 import * as x509 from "@peculiar/x509";
 import {
   type MarvellAttestation,
+  type MarvellVerificationCheck,
   type ResponseHeader,
   type MarvellAttestationData,
   type ObjectAttributes,
@@ -9,7 +10,6 @@ import {
   type AttributeValue,
   MarvellAttestationFlags,
   MarvellAttestationProvider,
-  type MarvellAttestationType,
 } from "@peculiar/attestation-marvell";
 import { program } from "./program";
 import { printCertificate, printCertificateShort, printPublicKey, TAB } from "./common";
@@ -79,9 +79,18 @@ function stringifyAttestationFlags(flags: MarvellAttestationFlags) {
   return values.join(" | ");
 }
 
-async function printAttestationDetails(attestation: MarvellAttestationType, tab = "") {
-  printAttestation(attestation.metadata, tab);
-  await printPublicKey(attestation.publicKey, tab);
+async function printAttestedPublicKey(provider: MarvellAttestationProvider, evidence: MarvellAttestation, tab = "") {
+  try {
+    await printPublicKey(provider.extractPublicKey(evidence), tab);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.log(`${tab}Attested public key: unavailable (${message})`);
+  }
+}
+
+function printVerificationCheck(label: string, check: MarvellVerificationCheck) {
+  const state = check.status === "not-evaluated" ? "NOT EVALUATED" : check.status.toUpperCase();
+  console.log(`${TAB}${label}: ${state}${check.status === "passed" ? "" : ` (${check.reason})`}`);
 }
 
 async function detailAttestation(file: string) {
@@ -92,9 +101,9 @@ async function detailAttestation(file: string) {
 
   const data = fs.readFileSync(file);
   const marvellAttestation = new MarvellAttestationProvider();
-  const attestation = await marvellAttestation.read(data);
-
-  await printAttestationDetails(attestation, "");
+  const evidence = marvellAttestation.parse(data);
+  printAttestation(evidence);
+  await printAttestedPublicKey(marvellAttestation, evidence);
 }
 
 const marvellCommand = program.command("marvell").description("Marvell attestation commands");
@@ -113,9 +122,9 @@ interface MarvellVerifyOptions {
 
 marvellCommand
   .command("verify")
-  .description("Verify the attestation")
+  .description("Verify Google Cloud HSM card/partition relationships and attestation signature")
   .argument("<attestation-file>", "The attestation file path")
-  .requiredOption("-c, --cert <file>", "The certificate file path")
+  .requiredOption("-c, --cert <file>", "The untrusted signing and intermediate certificate bundle (PEM)")
   .action(async (attestationFile: string, options: MarvellVerifyOptions) => {
     if (!fs.existsSync(attestationFile)) {
       console.error(`Attestation file not found: ${attestationFile}`);
@@ -133,17 +142,15 @@ marvellCommand
     const certBlobs = x509.PemConverter.decode(certData.toString());
     const certs = certBlobs.map((blob) => new x509.X509Certificate(blob));
 
-    const marvellAttestation = new MarvellAttestationProvider();
-    const attestation = await marvellAttestation.read(attestationData);
+    const marvellAttestation = new MarvellAttestationProvider({ profile: "google-cloud-hsm" });
+    const evidence = marvellAttestation.parse(attestationData);
 
-    const result = await marvellAttestation.verify({
-      attestation,
+    const result = await marvellAttestation.verifyEvidence({
+      evidence,
       intermediateCerts: certs,
-      trustedCerts: certs,
     });
 
-    const key = attestation.publicKey;
-    await printPublicKey(key);
+    await printAttestedPublicKey(marvellAttestation, evidence);
     console.log();
 
     if (result.chain) {
@@ -157,6 +164,8 @@ marvellCommand
     }
 
     console.log("Attestation verification:");
+    printVerificationCheck("Signature", result.signature);
+    printVerificationCheck("Certificate trust", result.trust);
     if (result.status) {
       console.log(`${TAB}Status: PASSED`);
     } else {

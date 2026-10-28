@@ -76,6 +76,30 @@ const result = await provider.verify({
 console.log(result);
 ```
 
+## Verification trust configuration
+
+`intermediateCerts` supplies untrusted certificates for path construction.
+`trustedCerts`, when supplied, replaces the provider's default trust configuration for
+that verification call. Omission or `undefined` keeps the defaults; an explicit empty
+array does not fall back to them. Provider-specific rules still apply: generic Marvell requires
+paths to every configured root and at least two anchors, while Yubico accepts a path
+to any configured anchor and treats an empty set as trusting no certificates.
+The concrete Marvell provider additionally supports a Google Cloud HSM profile with
+named manufacturer/owner anchors through its format-specific verification parameters.
+That profile explicitly rejects flat trust arrays; the shared interface stays unchanged.
+
+The shared `AttestationProvider.read()` contract still returns an attestation with a
+required `publicKey`. The concrete Marvell provider additionally exposes `parse()`,
+`verifyEvidence()` and `extractPublicKey()` so that parsing and verification need not
+extract the attested key. Use that format-specific evidence API for symmetric or
+unsupported attested keys; existing `read()` and `verify()` callers remain compatible.
+
+Marvell verification additionally returns format-specific `signature` and `trust`
+checks with `passed`, `failed` or `not-evaluated` states and reasons for non-passing
+checks. Its result remains assignable to the shared result type. Overall success
+requires both checks to pass for the same signing key; the shared interface and
+Yubico result are unchanged. Use the concrete Marvell provider for these typed fields.
+
 ## License
 
 This project is licensed under the MIT License.

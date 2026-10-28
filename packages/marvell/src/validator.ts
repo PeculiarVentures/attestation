@@ -1,15 +1,35 @@
-import { type AttestationVerificationResult } from "@peculiar/attestation-common";
 import * as x509 from "@peculiar/x509";
-import { BufferSourceConverter } from "pvtsutils";
+import { BufferSourceConverter, Convert } from "pvtsutils";
 import { type MarvellAttestation } from "./attestation";
 import { MarvellAttestationParser } from "./parser";
 import { MANUFACTURER_ROOT_CERT, OWNER_ROOT_CERT } from "./certs";
+import { CertificateLimitError, prepareCertificates } from "./certificates";
+import {
+  type MarvellAttestationVerificationResult,
+  type MarvellVerificationCheck,
+  type VerificationCandidate,
+  asError,
+  assertEvidence,
+  rejected,
+  unchecked,
+  uncheckable,
+  unverified,
+  verificationFailure,
+  verified,
+} from "./verification";
+
+const MAX_CHAIN_ATTEMPTS = 128;
+const CHAIN_LIMITS = { maxDepth: 16, maxSearchSteps: 10_000 };
+interface ChainSearchBudget {
+  remainingAttempts: number;
+}
 
 export interface MarvellAttestationValidatorParams {
   crypto?: Crypto;
   trustedCerts?: x509.X509Certificate[];
 }
 
+/* eslint-disable no-await-in-loop -- Searches share a request budget; acceptance searches precede failure diagnostics. */
 export class MarvellAttestationValidator {
   private crypto: Crypto;
   private rootCerts: x509.X509Certificate[];
@@ -17,119 +37,110 @@ export class MarvellAttestationValidator {
   constructor(params: MarvellAttestationValidatorParams = {}) {
     this.crypto = params.crypto || crypto;
     this.rootCerts = params.trustedCerts || [MANUFACTURER_ROOT_CERT, OWNER_ROOT_CERT];
-    if (this.rootCerts.length < 2) {
-      throw new Error("Invalid number of root certificates. At least two certificates are required.");
-    }
+    if (this.rootCerts.length < 2) throw new Error("Invalid number of root certificates. At least two certificates are required.");
   }
 
-  /**
-   * Validates the attestation data.
-   * @param data - The attestation data to validate.
-   * @param certChain - The certificate chain used to validate the attestation data.
-   * @returns A promise that resolves with an object containing the validation result.
-   */
-  public async validate(data: Uint8Array | MarvellAttestation, certs: x509.X509Certificate[]): Promise<AttestationVerificationResult> {
+  /** Validates the evidence signature and paths to every configured root, with independent check results. */
+  public async validate(data: Uint8Array | MarvellAttestation, certs: x509.X509Certificate[]): Promise<MarvellAttestationVerificationResult> {
+    let stage: "malformed-evidence" | "verification-error" = "verification-error";
     try {
-      let attestation: MarvellAttestation;
-      if (BufferSourceConverter.isBufferSource(data)) {
-        const parser = new MarvellAttestationParser();
-        attestation = parser.parse(data as BufferSource);
-      } else {
-        attestation = data;
-      }
-
-      // Build certificate chains for all root certificates
-      const chains = [];
-      for (const rootCert of this.rootCerts) {
-        const chain = await this.getCertificateChain(rootCert, certs);
-        if (!chain) {
-          throw new Error("Failed to build certificate chain for root certificate");
-        }
-        chains.push(chain);
-      }
-
-      const chain = chains[0];
-      const leafCerts = chains.map((chain) => chain[chain.length - 1]);
-
-      // Check if all public keys match
-      const signer = leafCerts[0];
-      const keyId = await signer.publicKey.getKeyIdentifier(this.crypto);
-      for (const cert of leafCerts) {
-        const certKeyId = await cert.publicKey.getKeyIdentifier(this.crypto);
-        if (!BufferSourceConverter.isEqual(keyId, certKeyId)) {
-          throw new Error("Public key mismatch between leaf certificates in different chains");
+      const certificates = prepareCertificates(certs, this.rootCerts);
+      stage = "malformed-evidence";
+      const attestation = BufferSourceConverter.isBufferSource(data) ? new MarvellAttestationParser().parse(data as BufferSource) : (data as MarvellAttestation);
+      assertEvidence(attestation);
+      stage = "verification-error";
+      const anchors = new Set(this.rootCerts.map((cert) => Convert.ToHex(cert.rawData)));
+      const groups = new Map<string, { certificates: x509.X509Certificate[]; compatible: boolean }>();
+      let unreadableKey = false;
+      for (const cert of certificates) {
+        if (anchors.has(Convert.ToHex(cert.rawData))) continue;
+        try {
+          const id = Convert.ToHex(cert.publicKey.rawData);
+          const group = groups.get(id);
+          if (group) group.certificates.push(cert);
+          // Preserve the generic validator's existing x509 RSA-PSS-to-PKCS1 export behavior.
+          else groups.set(id, { certificates: [cert], compatible: cert.publicKey.algorithm.name.includes("RSA") });
+        } catch {
+          unreadableKey = true;
         }
       }
-
-      const signature = attestation.signature;
-      const signedData = attestation.signedData;
-
-      // Perform a single signature verification
-      const isValid = await this.verifyAttestation(leafCerts[0], signature, signedData);
-
-      if (isValid) {
-        const result: AttestationVerificationResult = {
-          status: true,
-          signer,
-          chain,
-        };
-        return result;
-      } else {
-        const result: AttestationVerificationResult = {
-          status: false,
-          error: new Error("Failed to verify the attestation signature."),
-          signer,
-          chain,
-        };
-        return result;
+      const all = [...groups.values()];
+      const compatible = all.filter((group) => group.compatible);
+      const eligible = compatible.length ? compatible : all;
+      const candidates: VerificationCandidate[] = [];
+      const builder = new x509.X509ChainBuilder({ certificates });
+      const budget: ChainSearchBudget = { remainingAttempts: MAX_CHAIN_ATTEMPTS };
+      for (const group of eligible) {
+        const signature = group.compatible
+          ? await this.verifySignature(group.certificates[0], attestation)
+          : unchecked("unsupported-algorithm", new Error("The evidence signature requires an RSA signing key."));
+        const candidate: VerificationCandidate = { certificates: group.certificates, signature };
+        candidates.push(candidate);
+        if (signature.status === "passed") {
+          await this.checkTrust(candidate, builder, budget);
+          if (candidate.trust?.status === "passed") return verified(candidate.chain![candidate.chain!.length - 1], candidate.chain!);
+        }
       }
+      // Only diagnose mismatching/uncheckable keys after the original acceptance search is complete.
+      if (!candidates.some((candidate) => candidate.signature.status === "passed")) {
+        for (const candidate of candidates) await this.checkTrust(candidate, builder, budget);
+      }
+      if (!candidates.length && unreadableKey) return unverified("unsupported-algorithm", new Error("No usable certificate public key was supplied."));
+      const signed = candidates.some((candidate) => candidate.signature.status === "passed");
+      return verificationFailure(candidates, new Error(signed ? "Failed to build certificate chain for root certificate" : "Failed to verify the attestation signature."));
     } catch (error) {
-      const result: AttestationVerificationResult = {
-        status: false,
-        error: error instanceof Error ? error : new Error(String(error)),
-      };
-      return result;
+      return unverified(error instanceof CertificateLimitError ? "resource-limit" : stage, error);
     }
   }
 
-  private async getCertificateChain(rootCert: x509.X509Certificate, certs: x509.X509Certificate[]): Promise<x509.X509Certificate[] | null> {
-    const chain: x509.X509Certificate[] = [rootCert];
-    let currentCert = rootCert;
-
-    while (true) {
-      const issuedCert = await this.getIssuedCertificate(currentCert, certs);
-      if (!issuedCert) {
-        break;
-      }
-      chain.push(issuedCert);
-      currentCert = issuedCert;
-    }
-
-    return chain.length > 1 ? chain : null;
-  }
-
-  private async getIssuedCertificate(rootCert: x509.X509Certificate, certs: x509.X509Certificate[], predicate?: (cert: x509.X509Certificate) => boolean): Promise<x509.X509Certificate | null> {
-    for (const cert of certs) {
-      if (cert.issuer === rootCert.subject && (!predicate || predicate(cert))) {
-        const ok = await cert.verify({
-          publicKey: rootCert.publicKey,
-          signatureOnly: true,
-        });
-        if (!ok) {
-          throw new Error("Failed to verify the certificate chain.");
+  private async checkTrust(candidate: VerificationCandidate, builder: x509.X509ChainBuilder, budget: ChainSearchBudget): Promise<void> {
+    try {
+      let primaryPath: x509.X509Certificate[] | undefined;
+      for (const root of this.rootCerts) {
+        const path = await this.getCertificateChain(root, candidate.certificates, builder, budget);
+        if (!path) {
+          candidate.trust = rejected("untrusted-certificates", new Error("Failed to build certificate chain for root certificate"));
+          return;
         }
-        return cert;
+        primaryPath ??= path;
+      }
+      candidate.chain = [...primaryPath!].reverse();
+      candidate.trust = { status: "passed" };
+    } catch (error) {
+      const limited = error instanceof CertificateLimitError || (error instanceof x509.X509ChainBuildError && error.code === "LIMIT_EXCEEDED");
+      candidate.trust = unchecked(limited ? "resource-limit" : "verification-error", asError(error));
+    }
+  }
+
+  private async getCertificateChain(root: x509.X509Certificate, candidates: x509.X509Certificate[], builder: x509.X509ChainBuilder, budget: ChainSearchBudget): Promise<x509.X509Certificate[] | null> {
+    let incomplete: Error | undefined;
+    for (const signer of candidates) {
+      if (budget.remainingAttempts === 0) throw new CertificateLimitError(`Certificate chain search exceeded the ${MAX_CHAIN_ATTEMPTS}-attempt limit.`);
+      budget.remainingAttempts--;
+      try {
+        const path = await builder.buildToAnchor(signer, { trustAnchors: root, limits: CHAIN_LIMITS }, this.crypto);
+        if (path.length > 1) return path;
+      } catch (error) {
+        if (!(error instanceof x509.X509ChainBuildError)) throw error;
+        if (error.code === "LIMIT_EXCEEDED") {
+          if (!(incomplete instanceof x509.X509ChainBuildError) || incomplete.code !== "LIMIT_EXCEEDED") incomplete = error;
+        } else if (error.rejectionsTruncated || error.rejections.some((rejection) => rejection.reason === "VERIFICATION_ERROR")) incomplete ??= error;
       }
     }
+    if (incomplete) throw incomplete;
     return null;
   }
 
-  private async verifyAttestation(cert: x509.X509Certificate, signature: Uint8Array, signedData: Uint8Array): Promise<boolean> {
-    const alg = {
-      name: "RSASSA-PKCS1-v1_5",
-      hash: "SHA-256",
-    };
-    const publicKey = await cert.publicKey.export(alg, ["verify"], this.crypto);
-    return await this.crypto.subtle.verify(alg, publicKey, signature as BufferSource, signedData as BufferSource);
+  private async verifySignature(cert: x509.X509Certificate, evidence: MarvellAttestation): Promise<MarvellVerificationCheck> {
+    try {
+      const algorithm = { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" };
+      const key = await cert.publicKey.export(algorithm, ["verify"], this.crypto);
+      return (await this.crypto.subtle.verify(algorithm, key, evidence.signature as BufferSource, evidence.signedData as BufferSource))
+        ? { status: "passed" }
+        : rejected("invalid-signature", new Error("Failed to verify the attestation signature."));
+    } catch (error) {
+      return uncheckable(error);
+    }
   }
 }
+/* eslint-enable no-await-in-loop */
