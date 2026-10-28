@@ -6,11 +6,13 @@ export default defineConfig([
     entry: { index: "src/index.ts" },
     format: ["esm"],
     platform: "neutral",
-    dts: true,
+    // TypeScript 7 has no compiler API for tsc declarations, so Oxc generates them (isolatedDeclarations rules apply).
+    dts: { generator: "oxc" },
     clean: true,
     unbundle: true,
     fixedExtension: false,
     deps: { neverBundle: true },
+    exports: { legacy: true },
     inputOptions: { experimental: { attachDebugInfo: "none" } },
     outputOptions: {
       comments: { legal: true, annotation: true, jsdoc: false },
