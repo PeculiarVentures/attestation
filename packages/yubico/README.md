@@ -1,4 +1,16 @@
-# @peculiar/attestation-yubico
+<h1 align="center">
+  @peculiar/attestation-yubico
+</h1>
+
+<div align="center">
+
+![NPM License](https://img.shields.io/npm/l/@peculiar/attestation-yubico)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/PeculiarVentures/attestation/publish.yml?branch=main&label=publish)
+[![npm version](https://img.shields.io/npm/v/@peculiar/attestation-yubico.svg)](https://www.npmjs.com/package/@peculiar/attestation-yubico)
+![Coveralls](https://img.shields.io/coverallsCoverage/github/PeculiarVentures/attestation)
+[![npm downloads](https://img.shields.io/npm/dm/@peculiar/attestation-yubico.svg)](https://www.npmjs.com/package/@peculiar/attestation-yubico)
+
+</div>
 
 A library providing tools to verify PIV attestation files from Yubico, including support for certificate chain validation and attestation data extraction.
 
@@ -16,6 +28,15 @@ To install the library, use npm:
 ```sh
 npm install @peculiar/attestation-yubico
 ```
+
+## Breaking Changes In v3
+
+v3 is ESM-only and requires Node.js `^20.19.0 || >=22.12.0` (2.x had no `engines` field). CommonJS code can still `require("@peculiar/attestation-yubico")` on these versions; Node.js 22.0–22.11 can't. The public API is unchanged, apart from the new `getDefaultRootCerts()`. See the [full notes](https://github.com/PeculiarVentures/attestation#breaking-changes-in-v3).
+
+- **TypeScript compiling to CommonJS:** use `"module": "node20"` or `"nodenext"` (`node16` fails with TS1479). ESM and bundler setups need no changes.
+- **Jest in CommonJS mode:** switch to ESM mode or Vitest, or configure an ESM-to-CommonJS transformer and make sure `transformIgnorePatterns` doesn't exclude the `@peculiar/*` packages, `asn1js` and `tsyringe`.
+- **Deep imports** (`@peculiar/attestation-yubico/build/...`) are blocked by `exports`; import from `@peculiar/attestation-yubico`.
+- **Peer dependency:** `@peculiar/x509` (`^3.1.0`) is a peer instead of a dependency, so certificates you pass in and get back come from your app's copy. npm installs peers automatically.
 
 ## Usage
 

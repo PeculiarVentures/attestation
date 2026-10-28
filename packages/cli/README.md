@@ -1,4 +1,16 @@
-# Attestation Utility
+<h1 align="center">
+  @peculiar/attestation-cli
+</h1>
+
+<div align="center">
+
+![NPM License](https://img.shields.io/npm/l/@peculiar/attestation-cli)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/PeculiarVentures/attestation/publish.yml?branch=main&label=publish)
+[![npm version](https://img.shields.io/npm/v/@peculiar/attestation-cli.svg)](https://www.npmjs.com/package/@peculiar/attestation-cli)
+![Coveralls](https://img.shields.io/coverallsCoverage/github/PeculiarVentures/attestation)
+[![npm downloads](https://img.shields.io/npm/dm/@peculiar/attestation-cli.svg)](https://www.npmjs.com/package/@peculiar/attestation-cli)
+
+</div>
 
 This utility is designed for verifying attestation data in various formats. It supports multiple attestation providers and offers a range of commands to interact with attestation files and certificates.
 
@@ -16,6 +28,13 @@ To install the utility, use npm:
 ```sh
 npm install @peculiar/attestation-cli
 ```
+
+## Breaking Changes In v3
+
+The `attest` command requires Node.js `^20.19.0 || >=22.12.0` (2.x had no `engines` field) and is now an ES module. Its commands and options are unchanged. See the [full notes](https://github.com/PeculiarVentures/attestation#breaking-changes-in-v3).
+
+- **`marvell verify`** checks the Google Cloud HSM profile and prints separate signature and certificate-trust results. Evidence without the Google owner card and partition certificates now fails (see [Marvell verification](#marvell-verification)).
+- **Dependencies:** the CLI uses `@peculiar/x509` 3 and the v3 attestation libraries. Yubico commands still need the native `pkcs11js` module, so don't install with `--ignore-scripts`.
 
 ## Usage
 
