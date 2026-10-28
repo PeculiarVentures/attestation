@@ -20,13 +20,13 @@ Optionally configure a `RELEASE_TOKEN` GitHub App token or fine-grained PAT that
 ## Normal release
 
 1. Merge reviewed changes to `main` using Conventional Commit subjects. `feat:` requests a minor release; `fix:` requests a patch. A `!` subject or `BREAKING CHANGE:` footer requests a major release, including the ESM-only migration.
-2. The Release workflow runs the reusable CI workflow before invoking release-please. Release-please creates or updates a release PR with the next shared version and release notes in its description.
+2. The Release workflow runs the reusable Test workflow (`test.yml`) before invoking release-please. Release-please creates or updates a release PR with the next shared version and release notes in its description.
 3. Review the release PR, including all four package versions, internal dependency ranges, lockfile and release notes. Run CI on that PR. Do not manually edit generated versions independently.
 4. Merge the release PR. Release-please creates its immutable `v<version>` tag and the GitHub Release with the notes from the PR. The publication job verifies the release commit SHA, builds that commit and publishes using OIDC with npm provenance.
 
 To change the notes of a merged commit, add a `BEGIN_COMMIT_OVERRIDE` … `END_COMMIT_OVERRIDE` block with the replacement commit message to that PR's description before the release PR is merged; release-please uses it instead of the squash commit.
 
-Packages are published in dependency order: `common`, then `marvell` and `yubico`, then `cli`. The release script rejects mismatched versions, stale internal dependency ranges, dependency cycles and failed registry checks. Only a registry E404 is treated as an unpublished version. The `v<major>` Git tag is moved after successful publication, provided the version is the latest stable tag in that major.
+The publication job checks that every package has the root version, then publishes dependencies before their dependents (`common`, then `marvell` and `yubico`, then `cli`) and skips versions that `npm view` already finds on npm. The `v<major>` Git tag is moved after successful publication, provided the version is the latest stable tag in that major.
 
 The publication job uses `npm ci --ignore-scripts` and publishes with lifecycle scripts disabled. The explicit build and package export check run before publishing. Do not introduce dependencies that require installation scripts for the release build without adjusting this process.
 
@@ -34,13 +34,6 @@ The publication job uses `npm ci --ignore-scripts` and publishes with lifecycle 
 
 Open **Actions → Release → Run workflow** and select the existing `v<version>` tag. Branch refs and tags that disagree with the package version are rejected. Do not rerun from `main`, change package versions or move the release tag.
 
-The retry builds the same tagged source and skips exact package versions already present on npm. It stops at the first publication failure, so remaining dependents can be published by another retry after fixing access or registry availability. Check all four npm versions after a successful run. An unavailable registry or an authentication failure stops the workflow instead of being mistaken for a missing package.
+The retry builds the same tagged source and skips exact package versions already present on npm. It stops at the first publication failure, so remaining dependents can be published by another retry after fixing access or registry availability. Check all four npm versions after a successful run.
 
-Retry a partial release before creating a newer release. The script refuses to publish a missing older version if that package already has a newer `latest` version on npm. Use a maintainer-controlled publication with an explicit maintenance dist-tag for that older version; this prevents a retry from moving `latest` backwards.
-
-To inspect the release plan locally without publishing:
-
-```sh
-node scripts/release.mjs verify
-node --test scripts/release.test.mjs
-```
+Retry a partial release before creating a newer release: `npm publish` tags what it publishes as `latest`, so retrying an older version after a newer one has shipped would move `latest` backwards. Publish such a version by hand with a maintenance dist-tag instead.

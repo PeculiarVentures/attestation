@@ -14,8 +14,7 @@
     "coverage": "vitest run --coverage",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "typecheck": "tsc --noEmit",
-    "test:package": "node scripts/smoke.mjs"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "tsx": "^4.23.15"
